@@ -1,0 +1,22 @@
+services:
+  feedbackservice.api:
+    image: ${DOCKER_REGISTRY-}feedbackserviceapi
+    build:
+      context: .
+      dockerfile: FeedbackService.API/Dockerfile
+
+  userservice.api:
+    image: ${DOCKER_REGISTRY-}userserviceapi
+    build:
+      context: .
+      dockerfile: UserService.API/Dockerfile
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    volumes:
+      - sql_data:/var/opt/mssql
+
+volumes:
+  sql_data:
+

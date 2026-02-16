@@ -1,0 +1,19 @@
+version: "3.9"
+services:
+  userservice:
+    build:
+      context: .
+      dockerfile: UserService.API/Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+
+  feedbackservice:
+    build:
+      context: .
+      dockerfile: FeedbackService.API/Dockerfile
+    ports:
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development

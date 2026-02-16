@@ -1,0 +1,71 @@
+2025-09-11 07:38:39.929 +00:00 [WRN] Overriding address(es) 'http://*:8080, https://*:8081'. Binding to endpoints defined via IConfiguration and/or UseKestrel() instead.
+2025-09-11 07:38:40.016 +00:00 [INF] Now listening on: http://[::]:5000
+2025-09-11 07:38:40.017 +00:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-09-11 07:38:40.017 +00:00 [INF] Hosting environment: Development
+2025-09-11 07:38:40.017 +00:00 [INF] Content root path: /app
+2025-09-11 07:41:11.160 +00:00 [INF] Now listening on: http://[::]:8080
+2025-09-11 07:41:11.222 +00:00 [INF] Now listening on: https://[::]:8081
+2025-09-11 07:41:11.229 +00:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-09-11 07:41:11.230 +00:00 [INF] Hosting environment: Development
+2025-09-11 07:41:11.232 +00:00 [INF] Content root path: /app
+2025-09-11 07:54:06.734 +00:00 [INF] Now listening on: http://[::]:8080
+2025-09-11 07:54:06.974 +00:00 [INF] Now listening on: https://[::]:8081
+2025-09-11 07:54:06.984 +00:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-09-11 07:54:06.986 +00:00 [INF] Hosting environment: Development
+2025-09-11 07:54:06.987 +00:00 [INF] Content root path: /app
+2025-09-11 07:55:56.118 +00:00 [INF] Now listening on: http://[::]:8080
+2025-09-11 07:55:56.197 +00:00 [INF] Now listening on: https://[::]:8081
+2025-09-11 07:55:56.205 +00:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-09-11 07:55:56.208 +00:00 [INF] Hosting environment: Development
+2025-09-11 07:55:56.209 +00:00 [INF] Content root path: /app
+2025-09-11 07:57:16.507 +00:00 [INF] Now listening on: http://[::]:8080
+2025-09-11 07:57:16.620 +00:00 [INF] Now listening on: https://[::]:8081
+2025-09-11 07:57:16.646 +00:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-09-11 07:57:16.648 +00:00 [INF] Hosting environment: Development
+2025-09-11 07:57:16.656 +00:00 [INF] Content root path: /app
+2025-09-11 08:00:26.367 +00:00 [INF] Now listening on: http://[::]:8080
+2025-09-11 08:00:26.459 +00:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-09-11 08:00:26.464 +00:00 [INF] Hosting environment: Development
+2025-09-11 08:00:26.466 +00:00 [INF] Content root path: /app
+2025-09-11 08:01:47.368 +00:00 [INF] Now listening on: http://[::]:8080
+2025-09-11 08:01:47.457 +00:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-09-11 08:01:47.461 +00:00 [INF] Hosting environment: Development
+2025-09-11 08:01:47.462 +00:00 [INF] Content root path: /app
+2025-09-11 08:02:41.860 +00:00 [INF] Request starting HTTP/1.1 GET http://localhost:6002/ - null null
+2025-09-11 08:02:41.944 +00:00 [WRN] Failed to determine the https port for redirect.
+2025-09-11 08:02:41.955 +00:00 [INF] Executing endpoint 'HTTP: GET /'
+2025-09-11 08:02:41.968 +00:00 [INF] Executing RedirectResult, redirecting to /swagger.
+2025-09-11 08:02:41.969 +00:00 [INF] Executed endpoint 'HTTP: GET /'
+2025-09-11 08:02:41.987 +00:00 [INF] Request finished HTTP/1.1 GET http://localhost:6002/ - 302 0 null 131.7614ms
+2025-09-11 08:02:41.995 +00:00 [INF] Request starting HTTP/1.1 GET http://localhost:6002/swagger - null null
+2025-09-11 08:02:42.000 +00:00 [INF] Request finished HTTP/1.1 GET http://localhost:6002/swagger - 301 0 null 4.325ms
+2025-09-11 08:02:42.005 +00:00 [INF] Request starting HTTP/1.1 GET http://localhost:6002/swagger/index.html - null null
+2025-09-11 08:02:42.087 +00:00 [INF] Request finished HTTP/1.1 GET http://localhost:6002/swagger/index.html - 200 null text/html;charset=utf-8 81.8006ms
+2025-09-11 08:02:42.119 +00:00 [INF] Request starting HTTP/1.1 GET http://localhost:6002/swagger/swagger-ui.css - null null
+2025-09-11 08:02:42.144 +00:00 [INF] Request starting HTTP/1.1 GET http://localhost:6002/swagger/swagger-ui-bundle.js - null null
+2025-09-11 08:02:42.189 +00:00 [INF] Request starting HTTP/1.1 GET http://localhost:6002/swagger/swagger-ui-standalone-preset.js - null null
+2025-09-11 08:02:42.330 +00:00 [INF] Sending file. Request path: '/swagger-ui.css'. Physical path: 'N/A'
+2025-09-11 08:02:42.330 +00:00 [INF] Sending file. Request path: '/swagger-ui-standalone-preset.js'. Physical path: 'N/A'
+2025-09-11 08:02:42.334 +00:00 [INF] Request finished HTTP/1.1 GET http://localhost:6002/swagger/swagger-ui.css - 200 152034 text/css 215.3125ms
+2025-09-11 08:02:42.334 +00:00 [INF] Request finished HTTP/1.1 GET http://localhost:6002/swagger/swagger-ui-standalone-preset.js - 200 230280 text/javascript 144.9436ms
+2025-09-11 08:02:42.374 +00:00 [INF] Sending file. Request path: '/swagger-ui-bundle.js'. Physical path: 'N/A'
+2025-09-11 08:02:42.374 +00:00 [INF] Request finished HTTP/1.1 GET http://localhost:6002/swagger/swagger-ui-bundle.js - 200 1456926 text/javascript 255.3761ms
+2025-09-11 08:02:42.569 +00:00 [INF] Request starting HTTP/1.1 GET http://localhost:6002/swagger/v1/swagger.json - null null
+2025-09-11 08:02:42.623 +00:00 [INF] Request starting HTTP/1.1 GET http://localhost:6002/swagger/favicon-32x32.png - null null
+2025-09-11 08:02:42.625 +00:00 [INF] Sending file. Request path: '/favicon-32x32.png'. Physical path: 'N/A'
+2025-09-11 08:02:42.626 +00:00 [INF] Request finished HTTP/1.1 GET http://localhost:6002/swagger/favicon-32x32.png - 200 628 image/png 2.1417ms
+2025-09-11 08:02:42.692 +00:00 [INF] Request finished HTTP/1.1 GET http://localhost:6002/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 123.3486ms
+2025-09-11 08:06:29.914 +00:00 [INF] Now listening on: http://[::]:8080
+2025-09-11 08:06:29.972 +00:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-09-11 08:06:29.976 +00:00 [INF] Hosting environment: Development
+2025-09-11 08:06:29.976 +00:00 [INF] Content root path: /app
+2025-09-11 08:07:09.360 +00:00 [INF] Request starting HTTP/1.1 GET http://localhost:6002/ - null null
+2025-09-11 08:07:09.424 +00:00 [WRN] Failed to determine the https port for redirect.
+2025-09-11 08:07:09.432 +00:00 [INF] Executing endpoint 'HTTP: GET /'
+2025-09-11 08:07:09.442 +00:00 [INF] Executing RedirectResult, redirecting to /swagger.
+2025-09-11 08:07:09.447 +00:00 [INF] Executed endpoint 'HTTP: GET /'
+2025-09-11 08:07:09.467 +00:00 [INF] Request finished HTTP/1.1 GET http://localhost:6002/ - 302 0 null 109.0286ms
+2025-09-11 08:07:09.476 +00:00 [INF] Request starting HTTP/1.1 GET http://localhost:6002/swagger/index.html - null null
+2025-09-11 08:07:09.603 +00:00 [INF] Request finished HTTP/1.1 GET http://localhost:6002/swagger/index.html - 200 null text/html;charset=utf-8 127.7796ms
+2025-09-11 08:07:09.893 +00:00 [INF] Request starting HTTP/1.1 GET http://localhost:6002/swagger/v1/swagger.json - null null
+2025-09-11 08:07:10.001 +00:00 [INF] Request finished HTTP/1.1 GET http://localhost:6002/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 107.4191ms
