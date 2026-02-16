@@ -1,0 +1,6 @@
+@BFFService.API_HostAddress = http://localhost:5002
+
+GET {{BFFService.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
