@@ -19,6 +19,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=UserDb;User Id=sa;Password=GeoParola2025!;TrustServerCertificate=True;Encrypt=False;
       # - ASPNETCORE_HTTPS_PORTS=8081
     ports:
       - "6002:8080"

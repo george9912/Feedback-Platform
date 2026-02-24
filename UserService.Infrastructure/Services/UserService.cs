@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
-using MyFeedbackPlatform.Shared.Result;
+using SharedCommon;
 using System;
 using System.Collections.Generic;
 using System.Linq;

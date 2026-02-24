@@ -10,10 +10,10 @@
     <PackageReference Include="AutoMapper" Version="12.0.1" />
     <PackageReference Include="FluentValidation" Version="11.11.0" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\Shared\Shared.csproj" />
-    <ProjectReference Include="..\UserService.Domain\UserService.Domain.csproj" />
-  </ItemGroup>
+	
+	<ItemGroup>
+		<ProjectReference Include="..\SharedCommon\SharedCommon.csproj" />
+		<ProjectReference Include="..\UserService.Domain\UserService.Domain.csproj" />
+	</ItemGroup>
 
 </Project>
