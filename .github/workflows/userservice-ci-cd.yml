@@ -39,5 +39,5 @@ jobs:
       - name: Deploy to Azure Web App (container)
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ secrets.WEBAPP_NAME }}
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
           images: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest
