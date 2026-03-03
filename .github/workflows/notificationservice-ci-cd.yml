@@ -1,0 +1,53 @@
+name: NotificationService - Build & Deploy (Azure Function App)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "NotificationService/**"
+      - ".github/workflows/notificationservice-ci-cd.yml"
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      RESOURCE_GROUP: rg-feedback-dev
+      FUNCTION_APP_NAME: func-notification-myfeedback
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore NotificationService/NotificationService.csproj
+
+      - name: Build
+        run: dotnet build NotificationService/NotificationService.csproj -c Release --no-restore
+
+      - name: Publish
+        run: dotnet publish NotificationService/NotificationService.csproj -c Release -o ./publish
+
+      - name: Zip package
+        run: |
+          cd publish
+          zip -r ../publish.zip .
+          cd ..
+
+      - name: Deploy to Azure Function App (zip deploy)
+        run: |
+          az functionapp deployment source config-zip \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "$FUNCTION_APP_NAME" \
+            --src publish.zip

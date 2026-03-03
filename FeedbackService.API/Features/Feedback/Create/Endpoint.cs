@@ -1,8 +1,11 @@
-﻿using FastEndpoints;
+﻿using Azure.Messaging.ServiceBus;
+using FastEndpoints;
 using FeedbackService.API.Common;
+using FeedbackService.API.Common.Events;
 using FeedbackService.API.Features.Clients;
 using FeedbackService.API.Infrastructure;
 using FluentValidation;
+using System.Text.Json;
 using static FeedbackService.API.Features.Feedback.Create.Command;
 
 namespace FeedbackService.API.Features.Feedback.Create
@@ -12,10 +15,12 @@ namespace FeedbackService.API.Features.Feedback.Create
     {
         private readonly AppDbContext _db;
         private readonly IUserClient _userClient;
-        public CreateFeedbackEndpoint(AppDbContext db, IUserClient userClient)
+        private readonly ServiceBusSender _sender;
+        public CreateFeedbackEndpoint(AppDbContext db, IUserClient userClient, ServiceBusSender sender)
         {
             _db = db;
             _userClient = userClient;
+            _sender = sender;
         }
         public override void Configure()
         {
@@ -28,32 +33,30 @@ namespace FeedbackService.API.Features.Feedback.Create
             });
         }
 
-        //Research BFF - Backend For Frontend - alt Microserviciu ( HTTP Aggregator )
-        //public override async Task HandleAsync(CreateFeedbackRequest req, CancellationToken ct)
-        //{
-        //    var reseponse = await _userClient.UserExistsAsync(req.UserId, ct);
-        //    if (!reseponse)
-        //    {
-        //        HttpContext.Response.StatusCode = 404;
-        //        await HttpContext.Response.WriteAsJsonAsync(new { Message = "User not found." }, ct);
-        //        return;
-        //    }
-
-        //    var feedback = new Feedback(req.UserId, req.Rating, req.Comment);
-        //    _db.Feedbacks.Add(feedback);
-        //    await _db.SaveChangesAsync(ct);
-
-        //    await this.SendCreatedAtManual(
-        //                $"/api/feedback/{feedback.Id}",
-        //                new CreateFeedbackResponse(feedback.Id),
-        //                ct);
-        //}
-
         public override async Task HandleAsync(CreateFeedbackRequest req, CancellationToken ct)
         {
             var feedback = new Feedback(req.UserId, req.Rating, req.Comment);
             _db.Feedbacks.Add(feedback);
             await _db.SaveChangesAsync(ct);
+
+            // publish event -> Service Bus
+            var evt = new FeedbackCreatedEvent
+            {
+                FeedbackId = feedback.Id,
+                UserId = feedback.UserId,
+                Rating = feedback.Rating,
+                Comment = feedback.Comment,
+                CreatedAtUtc = DateTime.UtcNow
+            };
+
+            var msg = new ServiceBusMessage(JsonSerializer.Serialize(evt))
+            {
+                MessageId = feedback.Id.ToString(),   // idempotency-friendly
+                Subject = "FeedbackCreated",
+                ContentType = "application/json"
+            };
+
+            await _sender.SendMessageAsync(msg, ct);
 
             await this.SendCreatedAtManual(
                 $"/api/feedback/{feedback.Id}",

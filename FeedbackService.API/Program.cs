@@ -1,3 +1,4 @@
+using Azure.Messaging.ServiceBus;
 using Carter;
 using FastEndpoints;
 using FeedbackService.API.Features.Clients;
@@ -26,6 +27,19 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
         sqlOptions => sqlOptions.EnableRetryOnFailure()
     ));
 
+builder.Services.AddSingleton(_ =>
+{
+    var cs = builder.Configuration["ServiceBus:ConnectionString"];
+    return new ServiceBusClient(cs);
+});
+
+builder.Services.AddSingleton(sp =>
+{
+    var client = sp.GetRequiredService<ServiceBusClient>();
+    var queueName = builder.Configuration["ServiceBus:QueueName"];
+    return client.CreateSender(queueName);
+});
+
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 // Handlers
@@ -52,12 +66,12 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
-//if(app.Environment.IsDevelopment() || Environment.GetEnvironmentVariable("RUN_MIGRATIONS") == "true")
-//{
-//    using var scope = app.Services.CreateScope();
-//    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-//    db.Database.Migrate();
-//}
+if (app.Environment.IsDevelopment() || Environment.GetEnvironmentVariable("RUN_MIGRATIONS") == "true")
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();
