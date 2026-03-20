@@ -1,0 +1,35 @@
+2026-03-13 15:26:21.186 +02:00 [INF] User profile is available. Using 'C:\Users\george.moise\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-03-13 15:26:21.327 +02:00 [INF] Creating key {283622c8-e8f9-4cef-adfc-5343d344714e} with creation date 2026-03-13 13:26:21Z, activation date 2026-03-13 13:26:21Z, and expiration date 2026-06-11 13:26:21Z.
+2026-03-13 15:26:21.393 +02:00 [INF] Writing data to file 'C:\Users\george.moise\AppData\Local\ASP.NET\DataProtection-Keys\key-283622c8-e8f9-4cef-adfc-5343d344714e.xml'.
+2026-03-13 15:26:21.850 +02:00 [INF] Now listening on: https://localhost:7204
+2026-03-13 15:26:21.855 +02:00 [INF] Now listening on: http://localhost:5109
+2026-03-13 15:26:22.285 +02:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-03-13 15:26:22.288 +02:00 [INF] Hosting environment: Development
+2026-03-13 15:26:22.291 +02:00 [INF] Content root path: C:\Users\george.moise\source\repos\Feedback-Platform\UserService.API
+2026-03-13 15:26:25.005 +02:00 [INF] Request starting HTTP/2 GET https://localhost:7204/swagger - null null
+2026-03-13 15:26:25.349 +02:00 [INF] Request finished HTTP/2 GET https://localhost:7204/swagger - 301 0 null 355.1692ms
+2026-03-13 15:26:25.361 +02:00 [INF] Request starting HTTP/2 GET https://localhost:7204/swagger/index.html - null null
+2026-03-13 15:26:25.506 +02:00 [INF] Request finished HTTP/2 GET https://localhost:7204/swagger/index.html - 200 null text/html;charset=utf-8 144.7471ms
+2026-03-13 15:26:25.517 +02:00 [INF] Request starting HTTP/2 GET https://localhost:7204/swagger/swagger-ui.css - null null
+2026-03-13 15:26:25.518 +02:00 [INF] Request starting HTTP/2 GET https://localhost:7204/swagger/swagger-ui-bundle.js - null null
+2026-03-13 15:26:25.518 +02:00 [INF] Request starting HTTP/2 GET https://localhost:7204/swagger/swagger-ui-standalone-preset.js - null null
+2026-03-13 15:26:25.518 +02:00 [INF] Request starting HTTP/2 GET https://localhost:7204/_vs/browserLink - null null
+2026-03-13 15:26:25.518 +02:00 [INF] Request starting HTTP/2 GET https://localhost:7204/_framework/aspnetcore-browser-refresh.js - null null
+2026-03-13 15:26:25.609 +02:00 [INF] Request finished HTTP/2 GET https://localhost:7204/_framework/aspnetcore-browser-refresh.js - 200 13766 application/javascript; charset=utf-8 91.5005ms
+2026-03-13 15:26:25.616 +02:00 [INF] Sending file. Request path: '/swagger-ui.css'. Physical path: 'N/A'
+2026-03-13 15:26:25.616 +02:00 [INF] Sending file. Request path: '/swagger-ui-standalone-preset.js'. Physical path: 'N/A'
+2026-03-13 15:26:25.640 +02:00 [INF] Request finished HTTP/2 GET https://localhost:7204/swagger/swagger-ui.css - 200 152034 text/css 123.3608ms
+2026-03-13 15:26:25.646 +02:00 [INF] Request finished HTTP/2 GET https://localhost:7204/swagger/swagger-ui-standalone-preset.js - 200 230280 text/javascript 128.4496ms
+2026-03-13 15:26:25.672 +02:00 [INF] Sending file. Request path: '/swagger-ui-bundle.js'. Physical path: 'N/A'
+2026-03-13 15:26:25.676 +02:00 [INF] Request finished HTTP/2 GET https://localhost:7204/swagger/swagger-ui-bundle.js - 200 1456926 text/javascript 158.581ms
+2026-03-13 15:26:25.746 +02:00 [INF] Request finished HTTP/2 GET https://localhost:7204/_vs/browserLink - 200 null text/javascript; charset=UTF-8 228.5437ms
+2026-03-13 15:26:25.803 +02:00 [INF] Request starting HTTP/2 GET https://localhost:7204/swagger/v1/swagger.json - null null
+2026-03-13 15:26:25.821 +02:00 [INF] Request starting HTTP/2 GET https://localhost:7204/swagger/favicon-32x32.png - null null
+2026-03-13 15:26:25.828 +02:00 [INF] Request finished HTTP/2 GET https://localhost:7204/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 26.2513ms
+2026-03-13 15:26:25.833 +02:00 [INF] Sending file. Request path: '/favicon-32x32.png'. Physical path: 'N/A'
+2026-03-13 15:26:25.843 +02:00 [INF] Request finished HTTP/2 GET https://localhost:7204/swagger/favicon-32x32.png - 200 628 image/png 22.8754ms
+2026-03-13 15:26:31.670 +02:00 [INF] Request starting HTTP/2 GET https://localhost:7204/api/users/me - null null
+2026-03-13 15:26:32.130 +02:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-03-13 15:26:32.143 +02:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-03-13 15:26:32.148 +02:00 [INF] Request finished HTTP/2 GET https://localhost:7204/api/users/me - 401 0 null 477.7789ms

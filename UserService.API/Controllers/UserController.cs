@@ -1,14 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using UserService.Application.DTOs;
 using UserService.Application.Services;
-using static System.Net.WebRequestMethods;
 
 namespace UserService.API.Controllers
 {
     [ApiController]
     [Route("api/users")]
-    //De adaugat rute - substantive - plural
-    //De facut research pentru controllere - sa foloseasca minimal API sau ceva clasa
+    //[Authorize] -- DUPA APPROVAL O DECOMENTAM
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -18,17 +17,38 @@ namespace UserService.API.Controllers
             _userService = userService;
         }
 
+        [HttpGet("me")]
+        public IActionResult GetMe()
+        {
+            return Ok(new
+            {
+                IsAuthenticated = User.Identity?.IsAuthenticated ?? false,
+                Name = User.Identity?.Name,
+                Claims = User.Claims.Select(c => new
+                {
+                    c.Type,
+                    c.Value
+                })
+            });
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDto userDto)
         {
             var userId = await _userService.CreateUserAsync(userDto);
-            return CreatedAtAction(nameof(GetUserById), new { id = userId }, userId);
+
+            return CreatedAtAction(
+                nameof(GetUserById),
+                new { id = userId },
+                userId
+            );
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(Guid id)
         {
             var user = await _userService.GetUserByIdAsync(id);
+
             if (user == null)
                 return NotFound($"User with ID {id} not found.");
 
@@ -39,6 +59,7 @@ namespace UserService.API.Controllers
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _userService.GetAllUsersAsync();
+
             return Ok(users);
         }
 
@@ -46,55 +67,50 @@ namespace UserService.API.Controllers
         public async Task<IActionResult> UpdateUser(Guid id, [FromBody] CreateUserDto userDto)
         {
             var success = await _userService.UpdateUserAsync(id, userDto);
+
             if (!success)
                 return NotFound($"User with ID {id} not found.");
 
-            return NoContent(); 
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
             var success = await _userService.DeleteUserAsync(id);
+
             if (!success)
                 return NotFound($"User with ID {id} not found.");
 
-            return NoContent(); 
+            return NoContent();
         }
 
-        //De vazut Result pattern pentru returnari mai complexe ( validari etc ) 
-        //[HttpGet("{id}/exists")]
-        //public async Task<IActionResult> CheckUserExists(Guid id)
-        //{
-        //    try
-        //    {
-        //        var user = await _userService.GetUserByIdAsync(id);
-        //        if (user == null)
-        //            return NotFound();
-
-        //        return Ok(new { exists = true });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // log exception sau măcar temporar vezi în response
-        //        return StatusCode(500, $"Internal error: {ex.Message}");
-        //    }
-        //}
-
-        //With Result pattern
         [HttpGet("{id}/exists")]
         public async Task<IActionResult> CheckUserExists(Guid id)
         {
             var result = await _userService.GetUserByIdAsync(id);
+
             if (result.IsFailure)
             {
                 if (result.Error == "User not found")
                     return NotFound(new { exists = false });
+
                 return StatusCode(500, result.Error);
             }
 
             return Ok(new { exists = true });
         }
 
+        [HttpGet("my-profile")]
+        public async Task<IActionResult> GetMyProfile()
+        {
+            var users = await _userService.GetAllUsersAsync();
+            var profile = users.FirstOrDefault();
+
+            if (profile == null)
+                return NotFound("No profile found.");
+
+            return Ok(profile);
+        }
     }
 }
