@@ -14,5 +14,6 @@ namespace UserService.Application.Interfaces
         Task AddAsync(User user);
         Task UpdateAsync(User user);
         Task DeleteAsync(Guid id);
+        Task<User?> GetUserByAzureOidOrEmailAsync(string? azureOid, string? email);
     }
 }

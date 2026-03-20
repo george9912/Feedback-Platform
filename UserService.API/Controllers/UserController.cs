@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using UserService.Application.DTOs;
 using UserService.Application.Services;
 
@@ -7,7 +8,7 @@ namespace UserService.API.Controllers
 {
     [ApiController]
     [Route("api/users")]
-    //[Authorize] -- DUPA APPROVAL O DECOMENTAM
+    [Authorize] 
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -104,11 +105,24 @@ namespace UserService.API.Controllers
         [HttpGet("my-profile")]
         public async Task<IActionResult> GetMyProfile()
         {
-            var users = await _userService.GetAllUsersAsync();
-            var profile = users.FirstOrDefault();
+            var objectId =
+                User.FindFirst("oid")?.Value ??
+                User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
+
+            var email =
+                User.FindFirst("preferred_username")?.Value ??
+                User.FindFirst(ClaimTypes.Email)?.Value ??
+                User.FindFirst("emails")?.Value;
+
+            if (string.IsNullOrWhiteSpace(objectId) && string.IsNullOrWhiteSpace(email))
+                return Unauthorized("Could not identify the current user from token claims.");
+
+            // varianta recomandata: cautare dupa oid
+            // fallback: dupa email
+            var profile = await _userService.GetUserByAzureOidOrEmailAsync(objectId, email);
 
             if (profile == null)
-                return NotFound("No profile found.");
+                return NotFound("Profile for logged-in user was not found.");
 
             return Ok(profile);
         }

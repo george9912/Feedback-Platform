@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UserService.Application.DTOs;
 using UserService.Application.Interfaces;
 using UserService.Domain.Entities;
 using UserService.Infrastructure.Persistence;
@@ -51,6 +52,14 @@ namespace UserService.Infrastructure.Repositories
         {
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<User?> GetUserByAzureOidOrEmailAsync(string? azureOid, string? email)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(u =>
+                    (!string.IsNullOrEmpty(azureOid) && u.AzureAdObjectId == azureOid) ||
+                    (!string.IsNullOrEmpty(email) && u.Email == email));
         }
     }
 }

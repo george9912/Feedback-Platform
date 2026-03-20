@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SharedCommon;
 using System;
@@ -89,6 +90,14 @@ namespace UserService.Infrastructure.Services
             return true;
         }
 
+        public async Task<UserDto?> GetUserByAzureOidOrEmailAsync(string? azureOid, string? email)
+        {
+            var user = await _userRepository.GetUserByAzureOidOrEmailAsync(azureOid, email);
 
+            if (user == null)
+                return null;
+
+            return _mapper.Map<UserDto>(user);
+        }
     }
 }

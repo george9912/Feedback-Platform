@@ -15,5 +15,6 @@ namespace UserService.Application.Services
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
         Task<bool> UpdateUserAsync(Guid id, CreateUserDto userDto);
         Task<bool> DeleteUserAsync(Guid id);
+        Task<UserDto?> GetUserByAzureOidOrEmailAsync(string? azureOid, string? email);
     }
 }
