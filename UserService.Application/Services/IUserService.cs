@@ -16,5 +16,7 @@ namespace UserService.Application.Services
         Task<bool> UpdateUserAsync(Guid id, CreateUserDto userDto);
         Task<bool> DeleteUserAsync(Guid id);
         Task<UserDto?> GetUserByAzureOidOrEmailAsync(string? azureOid, string? email);
+        Task<UserDto> EnsureCurrentUserExistsAsync(EnsureCurrentUserDto dto);
+        Task<UserDto> UpsertFromGraphAsync(UpsertGraphUserDto dto);
     }
 }

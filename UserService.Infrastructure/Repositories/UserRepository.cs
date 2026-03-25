@@ -54,12 +54,14 @@ namespace UserService.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<User?> GetUserByAzureOidOrEmailAsync(string? azureOid, string? email)
+        public async Task<User?> GetByAzureAdObjectIdAsync(string azureAdObjectId)
+            => await _context.Users.FirstOrDefaultAsync(x => x.AzureAdObjectId == azureAdObjectId);
+
+        public async Task<User?> GetByAzureAdObjectIdOrEmailAsync(string? azureAdObjectId, string? email)
         {
-            return await _context.Users
-                .FirstOrDefaultAsync(u =>
-                    (!string.IsNullOrEmpty(azureOid) && u.AzureAdObjectId == azureOid) ||
-                    (!string.IsNullOrEmpty(email) && u.Email == email));
+            return await _context.Users.FirstOrDefaultAsync(x =>
+                (!string.IsNullOrEmpty(azureAdObjectId) && x.AzureAdObjectId == azureAdObjectId) ||
+                (!string.IsNullOrEmpty(email) && x.Email == email));
         }
     }
 }

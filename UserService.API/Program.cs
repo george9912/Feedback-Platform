@@ -1,6 +1,8 @@
+using Azure.Identity;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Graph;
 using Microsoft.Identity.Web;
 using Serilog;
 using System;
@@ -11,6 +13,7 @@ using UserService.Application.Validators;
 using UserService.Infrastructure;
 using UserService.Infrastructure.Persistence;
 using UserService.Infrastructure.Repositories;
+using UserService.Infrastructure.Services;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -33,12 +36,37 @@ builder.Services.AddDbContext<UserDbContext>(opt =>
         sqlOptions => sqlOptions.EnableRetryOnFailure()
     ));
 
+// Graph client
+builder.Services.AddSingleton<GraphServiceClient>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+
+    var tenantId = configuration["AzureAd:TenantId"];
+    var clientId = configuration["AzureAd:ClientId"];
+    var clientSecret = configuration["AzureAd:ClientSecret"];
+
+    if (string.IsNullOrWhiteSpace(tenantId) ||
+        string.IsNullOrWhiteSpace(clientId) ||
+        string.IsNullOrWhiteSpace(clientSecret))
+    {
+        throw new InvalidOperationException("AzureAd Graph configuration is missing.");
+    }
+
+    var credential = new ClientSecretCredential(
+        tenantId,
+        clientId,
+        clientSecret);
+
+    return new GraphServiceClient(credential, new[] { "https://graph.microsoft.com/.default" });
+});
+
 // Repositories
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService.Infrastructure.Services.UserService>();
+builder.Services.AddScoped<IGraphUserSyncService, GraphUserSyncService>();
 
 builder.Services.AddAutoMapper(typeof(UserProfile));
-
 
 // Add services to the container.
 

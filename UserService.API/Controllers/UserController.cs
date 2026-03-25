@@ -8,14 +8,18 @@ namespace UserService.API.Controllers
 {
     [ApiController]
     [Route("api/users")]
-    [Authorize] 
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IGraphUserSyncService _graphUserSyncService;
 
-        public UserController(IUserService userService)
+        public UserController(
+            IUserService userService,
+            IGraphUserSyncService graphUserSyncService)
         {
             _userService = userService;
+            _graphUserSyncService = graphUserSyncService;
         }
 
         [HttpGet("me")]
@@ -30,6 +34,94 @@ namespace UserService.API.Controllers
                     c.Type,
                     c.Value
                 })
+            });
+        }
+
+        [HttpPost("sync-me")]
+        public async Task<IActionResult> SyncMe()
+        {
+            var objectId =
+                User.FindFirst("oid")?.Value ??
+                User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
+
+            var email =
+                User.FindFirst("preferred_username")?.Value ??
+                User.FindFirst(ClaimTypes.Email)?.Value ??
+                User.FindFirst("emails")?.Value;
+
+            var displayName =
+                User.FindFirst("name")?.Value ??
+                User.Identity?.Name;
+
+            var firstName = User.FindFirst(ClaimTypes.GivenName)?.Value;
+            var lastName = User.FindFirst(ClaimTypes.Surname)?.Value;
+
+            if (string.IsNullOrWhiteSpace(objectId))
+                return Unauthorized("Could not find Azure AD object id in token.");
+
+            var result = await _userService.EnsureCurrentUserExistsAsync(new EnsureCurrentUserDto
+            {
+                AzureAdObjectId = objectId,
+                Email = email,
+                DisplayName = displayName,
+                FirstName = firstName,
+                LastName = lastName
+            });
+
+            return Ok(result);
+        }
+
+        [HttpGet("my-profile")]
+        public async Task<IActionResult> GetMyProfile()
+        {
+            var objectId =
+                User.FindFirst("oid")?.Value ??
+                User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
+
+            var email =
+                User.FindFirst("preferred_username")?.Value ??
+                User.FindFirst(ClaimTypes.Email)?.Value ??
+                User.FindFirst("emails")?.Value;
+
+            if (string.IsNullOrWhiteSpace(objectId) && string.IsNullOrWhiteSpace(email))
+                return Unauthorized("Could not identify the current user from token claims.");
+
+            var profile = await _userService.GetUserByAzureOidOrEmailAsync(objectId, email);
+
+            if (profile == null)
+                return NotFound("Profile for logged-in user was not found.");
+
+            return Ok(profile);
+        }
+
+        [HttpPost("sync-tenant")]
+        public async Task<IActionResult> SyncTenant(CancellationToken cancellationToken)
+        {
+            var tenantUsers = await _graphUserSyncService.GetTenantUsersAsync(cancellationToken);
+
+            var syncedCount = 0;
+
+            foreach (var graphUser in tenantUsers)
+            {
+                var email = graphUser.Mail ?? graphUser.UserPrincipalName ?? string.Empty;
+
+                await _userService.UpsertFromGraphAsync(new UpsertGraphUserDto
+                {
+                    AzureAdObjectId = graphUser.AzureAdObjectId,
+                    Email = email,
+                    UserPrincipalName = graphUser.UserPrincipalName ?? string.Empty,
+                    DisplayName = graphUser.DisplayName,
+                    FirstName = graphUser.GivenName ?? string.Empty,
+                    LastName = graphUser.Surname ?? string.Empty
+                });
+
+                syncedCount++;
+            }
+
+            return Ok(new
+            {
+                TotalFromGraph = tenantUsers.Count,
+                SyncedToLocalDb = syncedCount
             });
         }
 
@@ -48,19 +140,18 @@ namespace UserService.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(Guid id)
         {
-            var user = await _userService.GetUserByIdAsync(id);
+            var result = await _userService.GetUserByIdAsync(id);
 
-            if (user == null)
+            if (result == null || result.IsFailure)
                 return NotFound($"User with ID {id} not found.");
 
-            return Ok(user);
+            return Ok(result.Value);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _userService.GetAllUsersAsync();
-
             return Ok(users);
         }
 
@@ -91,40 +182,10 @@ namespace UserService.API.Controllers
         {
             var result = await _userService.GetUserByIdAsync(id);
 
-            if (result.IsFailure)
-            {
-                if (result.Error == "User not found")
-                    return NotFound(new { exists = false });
-
-                return StatusCode(500, result.Error);
-            }
+            if (result == null || result.IsFailure)
+                return NotFound(new { exists = false });
 
             return Ok(new { exists = true });
-        }
-
-        [HttpGet("my-profile")]
-        public async Task<IActionResult> GetMyProfile()
-        {
-            var objectId =
-                User.FindFirst("oid")?.Value ??
-                User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
-
-            var email =
-                User.FindFirst("preferred_username")?.Value ??
-                User.FindFirst(ClaimTypes.Email)?.Value ??
-                User.FindFirst("emails")?.Value;
-
-            if (string.IsNullOrWhiteSpace(objectId) && string.IsNullOrWhiteSpace(email))
-                return Unauthorized("Could not identify the current user from token claims.");
-
-            // varianta recomandata: cautare dupa oid
-            // fallback: dupa email
-            var profile = await _userService.GetUserByAzureOidOrEmailAsync(objectId, email);
-
-            if (profile == null)
-                return NotFound("Profile for logged-in user was not found.");
-
-            return Ok(profile);
         }
     }
 }
