@@ -11,10 +11,15 @@ namespace UserService.Application.Services
     public interface IUserService
     {
         Task<Guid> CreateUserAsync(CreateUserDto userDto);
-        Task<Result<UserDto>?> GetUserByIdAsync(Guid id);
+        Task<Result<UserDto>> GetUserByIdAsync(Guid id);
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
         Task<bool> UpdateUserAsync(Guid id, CreateUserDto userDto);
         Task<bool> DeleteUserAsync(Guid id);
-        Task<UserDto?> GetUserByAzureOidOrEmailAsync(string? azureOid, string? email);
+
+        Task<UserDto?> GetUserByAzureAdObjectIdOrEmailAsync(string? azureAdObjectId, string? email);
+
+        Task<UserDto> EnsureCurrentUserExistsAsync(EnsureCurrentUserDto dto);
+
+        Task<UserDto> UpsertFromGraphAsync(UpsertGraphUserDto dto);
     }
 }

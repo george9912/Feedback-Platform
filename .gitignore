@@ -9,3 +9,15 @@ obj/
 
 # Logs
 *.log
+
+# AI models
+docker-compose/models/
+*.gguf
+*.bin
+
+# Secrets / local config
+appsettings.Development.json
+.env
+secrets.json
+*.pfx
+*.key

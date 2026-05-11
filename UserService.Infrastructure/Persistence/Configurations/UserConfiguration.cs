@@ -1,10 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UserService.Domain.Entities;
 
 namespace UserService.Infrastructure.Persistence.Configurations
@@ -30,10 +25,31 @@ namespace UserService.Infrastructure.Persistence.Configurations
                    .HasMaxLength(200);
 
             builder.Property(u => u.Role)
-                   .IsRequired();
+                   .IsRequired()
+                   .HasMaxLength(50);
+
+            builder.Property(u => u.AzureAdObjectId)
+                   .HasMaxLength(100);
+
+            builder.Property(u => u.UserPrincipalName)
+                   .HasMaxLength(200);
+
+            builder.Property(u => u.DisplayName)
+                   .HasMaxLength(200);
 
             builder.Property(u => u.CreatedAt)
                    .IsRequired();
+
+            builder.Property(u => u.UpdatedAt)
+                   .IsRequired();
+
+            builder.HasIndex(u => u.AzureAdObjectId)
+                   .IsUnique()
+                   .HasFilter("[AzureAdObjectId] IS NOT NULL");
+
+            builder.HasIndex(u => u.Email);
+
+            builder.HasIndex(u => u.UserPrincipalName);
         }
     }
 }

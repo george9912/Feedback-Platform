@@ -31,21 +31,17 @@ namespace UserService.Infrastructure.Services
 
         public async Task<Guid> CreateUserAsync(CreateUserDto userDto)
         {
+            _logger.LogInformation("Creating a new user with email {Email}", userDto.Email);
+
             var user = _mapper.Map<User>(userDto);
             user.Id = Guid.NewGuid();
             user.CreatedAt = DateTime.UtcNow;
-
-            _logger.LogInformation("Creating user with email: {Email}", userDto.Email);
+            user.UpdatedAt = DateTime.UtcNow;
 
             await _userRepository.AddAsync(user);
+
             return user.Id;
         }
-
-        //public async Task<UserDto?> GetUserByIdAsync(Guid id)
-        //{
-        //    var user = await _userRepository.GetByIdAsync(id);
-        //    return user is null ? null : _mapper.Map<UserDto>(user);
-        //}
 
         public async Task<Result<UserDto>> GetUserByIdAsync(Guid id)
         {
@@ -90,14 +86,97 @@ namespace UserService.Infrastructure.Services
             return true;
         }
 
-        public async Task<UserDto?> GetUserByAzureOidOrEmailAsync(string? azureOid, string? email)
+        public async Task<UserDto?> GetUserByAzureAdObjectIdOrEmailAsync(string? azureAdObjectId, string? email)
         {
-            var user = await _userRepository.GetUserByAzureOidOrEmailAsync(azureOid, email);
+            var user = await _userRepository.GetByAzureAdObjectIdOrEmailAsync(azureAdObjectId, email);
 
-            if (user == null)
-                return null;
+            return user == null ? null : _mapper.Map<UserDto>(user);
+        }
 
-            return _mapper.Map<UserDto>(user);
+        public async Task<UserDto> EnsureCurrentUserExistsAsync(EnsureCurrentUserDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.AzureAdObjectId))
+                throw new ArgumentException("AzureAdObjectId is required.");
+
+            var existingUser = await _userRepository.GetByAzureAdObjectIdAsync(dto.AzureAdObjectId);
+
+            if (existingUser != null)
+            {
+                if (!string.IsNullOrWhiteSpace(dto.Email))
+                    existingUser.Email = dto.Email;
+
+                if (!string.IsNullOrWhiteSpace(dto.DisplayName))
+                    existingUser.DisplayName = dto.DisplayName;
+
+                if (!string.IsNullOrWhiteSpace(dto.FirstName))
+                    existingUser.FirstName = dto.FirstName;
+
+                if (!string.IsNullOrWhiteSpace(dto.LastName))
+                    existingUser.LastName = dto.LastName;
+
+                existingUser.UpdatedAt = DateTime.UtcNow;
+
+                await _userRepository.UpdateAsync(existingUser);
+
+                return _mapper.Map<UserDto>(existingUser);
+            }
+
+            var newUser = new User
+            {
+                Id = Guid.NewGuid(),
+                AzureAdObjectId = dto.AzureAdObjectId,
+                Email = dto.Email ?? string.Empty,
+                DisplayName = dto.DisplayName ?? string.Empty,
+                FirstName = dto.FirstName ?? string.Empty,
+                LastName = dto.LastName ?? string.Empty,
+                Role = "Employee",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            await _userRepository.AddAsync(newUser);
+
+            return _mapper.Map<UserDto>(newUser);
+        }
+
+        public async Task<UserDto> UpsertFromGraphAsync(UpsertGraphUserDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.AzureAdObjectId))
+                throw new ArgumentException("AzureAdObjectId is required.");
+
+            var existingUser = await _userRepository.GetByAzureAdObjectIdAsync(dto.AzureAdObjectId);
+
+            if (existingUser != null)
+            {
+                existingUser.Email = dto.Email;
+                existingUser.UserPrincipalName = dto.UserPrincipalName;
+                existingUser.DisplayName = dto.DisplayName;
+                existingUser.FirstName = dto.FirstName;
+                existingUser.LastName = dto.LastName;
+                existingUser.UpdatedAt = DateTime.UtcNow;
+
+                await _userRepository.UpdateAsync(existingUser);
+
+                return _mapper.Map<UserDto>(existingUser);
+            }
+
+            var newUser = new User
+            {
+                Id = Guid.NewGuid(),
+                AzureAdObjectId = dto.AzureAdObjectId,
+                Email = dto.Email,
+                UserPrincipalName = dto.UserPrincipalName,
+                DisplayName = dto.DisplayName,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                Role = "Employee",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            await _userRepository.AddAsync(newUser);
+
+            return _mapper.Map<UserDto>(newUser);
         }
     }
 }
