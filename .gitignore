@@ -21,3 +21,9 @@ appsettings.Development.json
 secrets.json
 *.pfx
 *.key
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.env
