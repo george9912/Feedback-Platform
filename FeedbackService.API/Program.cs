@@ -27,18 +27,29 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
         sqlOptions => sqlOptions.EnableRetryOnFailure()
     ));
 
-//builder.Services.AddSingleton(_ =>
-//{
-//    var cs = builder.Configuration["ServiceBus:ConnectionString"];
-//    return new ServiceBusClient(cs);
-//});
+builder.Services.AddSingleton(_ =>
+{
+    var cs = builder.Configuration["ServiceBus:ConnectionString"];
+    if (string.IsNullOrWhiteSpace(cs))
+    {
+        throw new InvalidOperationException("Missing ServiceBus:ConnectionString configuration.");
+    }
 
-//builder.Services.AddSingleton(sp =>
-//{
-//    var client = sp.GetRequiredService<ServiceBusClient>();
-//    var queueName = builder.Configuration["ServiceBus:QueueName"];
-//    return client.CreateSender(queueName);
-//});
+    return new ServiceBusClient(cs);
+});
+
+builder.Services.AddSingleton(sp =>
+{
+    var client = sp.GetRequiredService<ServiceBusClient>();
+    var queueName = builder.Configuration["ServiceBus:QueueName"];
+
+    if (string.IsNullOrWhiteSpace(queueName))
+    {
+        queueName = "feedback-created";
+    }
+
+    return client.CreateSender(queueName);
+});
 
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 

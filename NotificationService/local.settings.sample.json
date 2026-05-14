@@ -1,0 +1,11 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "ServiceBusConnection": "",
+    "AcsEmail:ConnectionString": "",
+    "AcsEmail:From": "no-reply@contoso.com",
+    "UserService:BaseUrl": "http://localhost:5160"
+  }
+}
