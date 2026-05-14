@@ -8,7 +8,7 @@ namespace UserService.API.Controllers
 {
     [ApiController]
     [Route("api/users")]
-    //[Authorize]
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -129,6 +129,27 @@ namespace UserService.API.Controllers
         {
             var users = await _userService.GetAllUsersAsync();
             return Ok(users);
+        }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchUsers(
+            [FromQuery] string q = "",
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 12)
+        {
+            if (page < 1) page = 1;
+            if (pageSize < 1 || pageSize > 100) pageSize = 12;
+
+            var (users, total) = await _userService.SearchUsersAsync(q, page, pageSize);
+
+            return Ok(new
+            {
+                users,
+                totalCount = total,
+                page,
+                pageSize,
+                totalPages = (int)Math.Ceiling(total / (double)pageSize)
+            });
         }
 
         [HttpPut("{id:guid}")]

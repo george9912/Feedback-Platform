@@ -10,10 +10,12 @@ namespace FeedbackService.API.Features.Feedback.ListByUser
                 Guid userId,
                 int page,
                 int pageSize,
+                Guid? viewerUserId,
+                string? viewerRole,
                 Handler handler,
                 CancellationToken ct) =>
             {
-                var request = new GetFeedbacksByUserRequest(userId, page, pageSize);
+                var request = new GetFeedbacksByUserRequest(userId, page, pageSize, viewerUserId, viewerRole);
                 var result = await handler.Handle(request, ct);
                 return Results.Ok(result);
             })

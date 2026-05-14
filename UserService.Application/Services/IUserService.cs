@@ -21,5 +21,7 @@ namespace UserService.Application.Services
         Task<UserDto> EnsureCurrentUserExistsAsync(EnsureCurrentUserDto dto);
 
         Task<UserDto> UpsertFromGraphAsync(UpsertGraphUserDto dto);
+
+        Task<(IEnumerable<UserDto> Users, int TotalCount)> SearchUsersAsync(string query, int page, int pageSize);
     }
 }

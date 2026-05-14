@@ -2,6 +2,6 @@
 {
     public class Command
     {
-        public sealed record UpdateFeedbackRequest(int Rating, string Comment);
+        public sealed record UpdateFeedbackRequest(int Rating, string Comment, string Visibility = "Public", string[]? Tags = null);
     }
 }

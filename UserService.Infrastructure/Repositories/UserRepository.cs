@@ -67,5 +67,36 @@ namespace UserService.Infrastructure.Repositories
                 (!string.IsNullOrEmpty(azureAdObjectId) && x.AzureAdObjectId == azureAdObjectId) ||
                 (!string.IsNullOrEmpty(email) && x.Email == email));
         }
+
+        public async Task<IEnumerable<User>> SearchAsync(string query, int page, int pageSize)
+        {
+            var q = query.Trim().ToLower();
+
+            return await _context.Users
+                .AsNoTracking()
+                .Where(u =>
+                    (u.DisplayName != null && u.DisplayName.ToLower().Contains(q)) ||
+                    (u.FirstName != null && u.FirstName.ToLower().Contains(q)) ||
+                    (u.LastName != null && u.LastName.ToLower().Contains(q)) ||
+                    (u.Email != null && u.Email.ToLower().Contains(q)))
+                .OrderBy(u => u.DisplayName)
+                .ThenBy(u => u.Email)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<int> CountSearchAsync(string query)
+        {
+            var q = query.Trim().ToLower();
+
+            return await _context.Users
+                .AsNoTracking()
+                .CountAsync(u =>
+                    (u.DisplayName != null && u.DisplayName.ToLower().Contains(q)) ||
+                    (u.FirstName != null && u.FirstName.ToLower().Contains(q)) ||
+                    (u.LastName != null && u.LastName.ToLower().Contains(q)) ||
+                    (u.Email != null && u.Email.ToLower().Contains(q)));
+        }
     }
 }

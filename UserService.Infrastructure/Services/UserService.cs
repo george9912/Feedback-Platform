@@ -179,5 +179,21 @@ namespace UserService.Infrastructure.Services
             return _mapper.Map<UserDto>(newUser);
         }
 
+        public async Task<(IEnumerable<UserDto> Users, int TotalCount)> SearchUsersAsync(string query, int page, int pageSize)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                var all = await _userRepository.GetAllAsync();
+                var allList = all.ToList();
+                var paged = allList.Skip((page - 1) * pageSize).Take(pageSize);
+                return (_mapper.Map<IEnumerable<UserDto>>(paged), allList.Count);
+            }
+
+            var users = await _userRepository.SearchAsync(query, page, pageSize);
+            var total = await _userRepository.CountSearchAsync(query);
+
+            return (_mapper.Map<IEnumerable<UserDto>>(users), total);
+        }
+
     }
 }

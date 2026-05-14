@@ -6,12 +6,23 @@ import Notifications from "../pages/Notifications";
 import Feedbacks from "../pages/Feedbacks";
 import Directory from "../pages/Directory";
 import MyProfile from "../pages/MyProfile";
+import AdminPanel from "../pages/AdminPanel";
 import ChatWidget from "../pages/ChatWidget";
 import "../styles/dashboard.css";
 
 function DashboardLayout() {
   const [selectedMenu, setSelectedMenu] = useState("Home");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [prefilledFeedbackRecipient, setPrefilledFeedbackRecipient] = useState(null);
+
+  const handleGiveFeedback = (user) => {
+    setPrefilledFeedbackRecipient(user);
+    setSelectedMenu("Feedbacks");
+  };
+
+  const clearPrefilledRecipient = () => {
+    setPrefilledFeedbackRecipient(null);
+  };
 
   const renderPage = () => {
     switch (selectedMenu) {
@@ -20,11 +31,18 @@ function DashboardLayout() {
       case "Notifications":
         return <Notifications />;
       case "Feedbacks":
-        return <Feedbacks />;
+        return (
+          <Feedbacks
+            preselectedRecipient={prefilledFeedbackRecipient}
+            onPreselectedRecipientConsumed={clearPrefilledRecipient}
+          />
+        );
       case "Directory":
-        return <Directory />;
+        return <Directory onGiveFeedback={handleGiveFeedback} />;
       case "MyProfile":
         return <MyProfile />;
+      case "AdminPanel":
+        return <AdminPanel />;
       default:
         return <Home />;
     }

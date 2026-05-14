@@ -15,7 +15,11 @@ namespace FeedbackService.API.Features.Feedback.Update
             if (entity is null)
                 return false;
 
-            entity.Update(request.Rating, request.Comment);
+            var visibility = Enum.TryParse<Features.Feedback.FeedbackVisibility>(request.Visibility, true, out var parsed)
+                ? parsed
+                : Features.Feedback.FeedbackVisibility.Public;
+
+            entity.Update(request.Rating, request.Comment, visibility, request.Tags);
 
             await _db.SaveChangesAsync(ct);
             return true;

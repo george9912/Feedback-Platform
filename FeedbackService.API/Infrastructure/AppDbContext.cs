@@ -17,6 +17,13 @@ namespace FeedbackService.API.Infrastructure
             {
                 b.HasKey(x => x.Id);
                 b.Property(x => x.Comment).HasMaxLength(2000);
+                b.Property(x => x.Visibility)
+                    .HasConversion<string>()
+                    .HasMaxLength(20)
+                    .HasDefaultValue(Features.Feedback.FeedbackVisibility.Public);
+                b.Property(x => x.Tags)
+                    .HasMaxLength(500)
+                    .HasDefaultValue(string.Empty);
             });
         }
     }

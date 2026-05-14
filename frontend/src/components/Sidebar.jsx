@@ -1,8 +1,14 @@
 import { useState } from "react";
+import { useMsal } from "@azure/msal-react";
 import "../styles/dashboard.css";
 
 function Sidebar({ selectedMenu, setSelectedMenu, collapsed, onToggleSidebar }) {
   const [usersOpen, setUsersOpen] = useState(true);
+  const { instance } = useMsal();
+
+  const handleLogout = () => {
+    instance.logoutRedirect();
+  };
 
   return (
     <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
@@ -38,6 +44,15 @@ function Sidebar({ selectedMenu, setSelectedMenu, collapsed, onToggleSidebar }) 
         >
           <span className="sidebar-icon">💬</span>
           {!collapsed && <span className="sidebar-label">Feedbacks</span>}
+        </button>
+
+        <button
+          className={`sidebar-item ${selectedMenu === "AdminPanel" ? "active" : ""}`}
+          onClick={() => setSelectedMenu("AdminPanel")}
+          title={collapsed ? "Admin Panel" : ""}
+        >
+          <span className="sidebar-icon">🛡️</span>
+          {!collapsed && <span className="sidebar-label">Admin Panel</span>}
         </button>
 
         <div className="sidebar-group">
@@ -76,6 +91,17 @@ function Sidebar({ selectedMenu, setSelectedMenu, collapsed, onToggleSidebar }) 
           )}
         </div>
       </nav>
+
+      <div className="sidebar-bottom">
+        <button
+          className="sidebar-item logout-item"
+          onClick={handleLogout}
+          title={collapsed ? "Logout" : ""}
+        >
+          <span className="sidebar-icon">🚪</span>
+          {!collapsed && <span className="sidebar-label">Logout</span>}
+        </button>
+      </div>
     </aside>
   );
 }

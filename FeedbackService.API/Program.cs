@@ -27,18 +27,18 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
         sqlOptions => sqlOptions.EnableRetryOnFailure()
     ));
 
-builder.Services.AddSingleton(_ =>
-{
-    var cs = builder.Configuration["ServiceBus:ConnectionString"];
-    return new ServiceBusClient(cs);
-});
+//builder.Services.AddSingleton(_ =>
+//{
+//    var cs = builder.Configuration["ServiceBus:ConnectionString"];
+//    return new ServiceBusClient(cs);
+//});
 
-builder.Services.AddSingleton(sp =>
-{
-    var client = sp.GetRequiredService<ServiceBusClient>();
-    var queueName = builder.Configuration["ServiceBus:QueueName"];
-    return client.CreateSender(queueName);
-});
+//builder.Services.AddSingleton(sp =>
+//{
+//    var client = sp.GetRequiredService<ServiceBusClient>();
+//    var queueName = builder.Configuration["ServiceBus:QueueName"];
+//    return client.CreateSender(queueName);
+//});
 
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
@@ -65,12 +65,29 @@ builder.Services.AddHttpClient<IUserClient, UserClient>(client =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-
-if (app.Environment.IsDevelopment() || Environment.GetEnvironmentVariable("RUN_MIGRATIONS") == "true")
+using (var scope = app.Services.CreateScope())
 {
-    using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    var retries = 10;
+    for (int i = 1; i <= retries; i++)
+    {
+        try
+        {
+            dbContext.Database.Migrate();
+            Console.WriteLine("Migration applied successfully.");
+            break;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Migration attempt {i} failed: {ex.Message}");
+
+            if (i == retries)
+                throw;
+
+            Thread.Sleep(5000);
+        }
+    }
 }
 
 app.UseSwagger();

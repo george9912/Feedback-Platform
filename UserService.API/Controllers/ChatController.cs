@@ -8,7 +8,7 @@ namespace UserService.API.Controllers
 {
     [ApiController]
     [Route("api/chat")]
-    //[Authorize]
+    [Authorize]
 
     public class ChatController : ControllerBase
     {

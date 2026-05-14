@@ -16,11 +16,11 @@ namespace FeedbackService.API.Features.Feedback.Create
         private readonly AppDbContext _db;
         private readonly IUserClient _userClient;
         private readonly ServiceBusSender _sender;
-        public CreateFeedbackEndpoint(AppDbContext db, IUserClient userClient, ServiceBusSender sender)
+        public CreateFeedbackEndpoint(AppDbContext db, IUserClient userClient)
         {
             _db = db;
             _userClient = userClient;
-            _sender = sender;
+            //_sender = sender;
         }
         public override void Configure()
         {
@@ -35,7 +35,11 @@ namespace FeedbackService.API.Features.Feedback.Create
 
         public override async Task HandleAsync(CreateFeedbackRequest req, CancellationToken ct)
         {
-            var feedback = new Feedback(req.UserId, req.Rating, req.Comment);
+            var visibility = Enum.TryParse<FeedbackVisibility>(req.Visibility, true, out var parsed)
+                ? parsed
+                : FeedbackVisibility.Public;
+
+            var feedback = new Feedback(req.UserId, req.Rating, req.Comment, visibility, req.Tags);
             _db.Feedbacks.Add(feedback);
             await _db.SaveChangesAsync(ct);
 
@@ -56,7 +60,7 @@ namespace FeedbackService.API.Features.Feedback.Create
                 ContentType = "application/json"
             };
 
-            await _sender.SendMessageAsync(msg, ct);
+            //await _sender.SendMessageAsync(msg, ct);
 
             await this.SendCreatedAtManual(
                 $"/api/feedback/{feedback.Id}",

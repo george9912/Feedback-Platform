@@ -18,5 +18,7 @@ namespace UserService.Application.Interfaces
 
         Task<User?> GetByAzureAdObjectIdAsync(string azureAdObjectId);
         Task<User?> GetByAzureAdObjectIdOrEmailAsync(string? azureAdObjectId, string? email);
+        Task<IEnumerable<User>> SearchAsync(string query, int page, int pageSize);
+        Task<int> CountSearchAsync(string query);
     }
 }

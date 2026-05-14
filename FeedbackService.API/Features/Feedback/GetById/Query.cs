@@ -7,6 +7,8 @@
                                                     Guid UserId,
                                                     int Rating,
                                                     string Comment,
+                                                    string Visibility,
+                                                    string[] Tags,
                                                     DateTime CreatedAt);
     }
 }

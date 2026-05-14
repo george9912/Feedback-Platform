@@ -13,7 +13,14 @@ namespace FeedbackService.API.Features.Feedback.GetById
         {
             return await dbContext.Feedbacks
                 .Where(f => f.Id == id)
-                .Select(f => new GetFeedbackByIdResponse(f.Id, f.UserId, f.Rating, f.Comment, f.CreatedAt))
+                .Select(f => new GetFeedbackByIdResponse(
+                    f.Id,
+                    f.UserId,
+                    f.Rating,
+                    f.Comment,
+                    f.Visibility.ToString(),
+                    (f.Tags ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+                    f.CreatedAt))
                 .FirstOrDefaultAsync(ct);
         }
     }
