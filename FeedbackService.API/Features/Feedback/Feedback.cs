@@ -4,6 +4,8 @@
     {
         public Guid Id { get; private set; }
         public Guid UserId { get; private set; }
+        public Guid? SubmittedByUserId { get; private set; }
+        public Guid? CampaignId { get; private set; }
         public int Rating { get; private set; }
         public string Comment { get; private set; } = string.Empty;
         public FeedbackVisibility Visibility { get; private set; }
@@ -17,13 +19,17 @@
             int rating,
             string comment,
             FeedbackVisibility visibility = FeedbackVisibility.Public,
-            IEnumerable<string>? tags = null)
+            IEnumerable<string>? tags = null,
+            Guid? submittedByUserId = null,
+            Guid? campaignId = null)
         {
             if (rating is < 1 or > 5)
                 throw new ArgumentOutOfRangeException(nameof(rating), "Rating must be 1..5");
 
             Id = Guid.NewGuid();
             UserId = userId;
+            SubmittedByUserId = submittedByUserId;
+            CampaignId = campaignId;
             Rating = rating;
             Comment = comment.Trim();
             Visibility = visibility;

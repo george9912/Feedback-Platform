@@ -16,6 +16,7 @@ namespace UserService.Domain.Entities
 
         public string Email { get; set; } = string.Empty;
         public string Role { get; set; } = "Employee";
+        public string Department { get; set; } = string.Empty;
 
         public string? AzureAdObjectId { get; set; }
         public string? UserPrincipalName { get; set; }

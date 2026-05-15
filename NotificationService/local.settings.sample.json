@@ -3,6 +3,8 @@
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "AzureWebJobs.FeedbackCreatedHandler.Disabled": "true",
+    "AzureWebJobs.CampaignNotificationHandler.Disabled": "true",
     "ServiceBusConnection": "",
     "AcsEmail:ConnectionString": "",
     "AcsEmail:From": "no-reply@contoso.com",

@@ -189,5 +189,6 @@ export async function updateUserRole(instance, account, user, newRole) {
     lastName,
     email: (user.email || "").trim(),
     role: newRole,
+    department: (user.department || "").trim(),
   });
 }

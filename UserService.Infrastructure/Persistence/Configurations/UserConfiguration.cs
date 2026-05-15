@@ -28,6 +28,10 @@ namespace UserService.Infrastructure.Persistence.Configurations
                    .IsRequired()
                    .HasMaxLength(50);
 
+            builder.Property(u => u.Department)
+                   .HasMaxLength(100)
+                   .HasDefaultValue(string.Empty);
+
             builder.Property(u => u.AzureAdObjectId)
                    .HasMaxLength(100);
 

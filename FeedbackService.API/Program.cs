@@ -1,7 +1,8 @@
-using Azure.Messaging.ServiceBus;
 using Carter;
 using FastEndpoints;
+using FeedbackService.API.Common.Notifications;
 using FeedbackService.API.Features.Clients;
+using FeedbackService.API.Features.Feedback.Campaign;
 using FeedbackService.API.Features.Feedback.Create;
 using FeedbackService.API.Features.Feedback.Delete;
 using FeedbackService.API.Features.Feedback.GetById;
@@ -27,29 +28,21 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
         sqlOptions => sqlOptions.EnableRetryOnFailure()
     ));
 
-builder.Services.AddSingleton(_ =>
+var serviceBusConnectionString = builder.Configuration["ServiceBus:ConnectionString"];
+var serviceBusEnabled = builder.Configuration.GetValue<bool?>("ServiceBus:Enabled")
+    ?? !string.IsNullOrWhiteSpace(serviceBusConnectionString);
+
+if (serviceBusEnabled && !string.IsNullOrWhiteSpace(serviceBusConnectionString))
 {
-    var cs = builder.Configuration["ServiceBus:ConnectionString"];
-    if (string.IsNullOrWhiteSpace(cs))
-    {
-        throw new InvalidOperationException("Missing ServiceBus:ConnectionString configuration.");
-    }
-
-    return new ServiceBusClient(cs);
-});
-
-builder.Services.AddSingleton(sp =>
+    builder.Services.AddSingleton(_ => new Azure.Messaging.ServiceBus.ServiceBusClient(serviceBusConnectionString));
+    builder.Services.AddSingleton<IFeedbackEventPublisher, ServiceBusFeedbackEventPublisher>();
+    builder.Services.AddSingleton<ICampaignNotificationDispatcher, CampaignNotificationDispatcher>();
+}
+else
 {
-    var client = sp.GetRequiredService<ServiceBusClient>();
-    var queueName = builder.Configuration["ServiceBus:QueueName"];
-
-    if (string.IsNullOrWhiteSpace(queueName))
-    {
-        queueName = "feedback-created";
-    }
-
-    return client.CreateSender(queueName);
-});
+    builder.Services.AddSingleton<IFeedbackEventPublisher, NoOpFeedbackEventPublisher>();
+    builder.Services.AddSingleton<ICampaignNotificationDispatcher, NoOpCampaignNotificationDispatcher>();
+}
 
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
@@ -120,5 +113,6 @@ app.MapGetFeedbackById();
 app.MapGetFeedbacksByUser();
 app.MapUpdateFeedback();
 app.MapDeleteFeedback();
+app.MapCampaignRoutes();
 
 app.Run();

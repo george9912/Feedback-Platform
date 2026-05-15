@@ -4,6 +4,7 @@ import Sidebar from "../components/Sidebar";
 import Home from "../pages/Home";
 import Notifications from "../pages/Notifications";
 import Feedbacks from "../pages/Feedbacks";
+import Campaigns from "../pages/Campaigns";
 import Directory from "../pages/Directory";
 import MyProfile from "../pages/MyProfile";
 import AdminPanel from "../pages/AdminPanel";
@@ -37,6 +38,8 @@ function DashboardLayout() {
             onPreselectedRecipientConsumed={clearPrefilledRecipient}
           />
         );
+      case "Campaigns":
+        return <Campaigns />;
       case "Directory":
         return <Directory onGiveFeedback={handleGiveFeedback} />;
       case "MyProfile":

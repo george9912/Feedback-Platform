@@ -47,6 +47,15 @@ function Sidebar({ selectedMenu, setSelectedMenu, collapsed, onToggleSidebar }) 
         </button>
 
         <button
+          className={`sidebar-item ${selectedMenu === "Campaigns" ? "active" : ""}`}
+          onClick={() => setSelectedMenu("Campaigns")}
+          title={collapsed ? "Campaigns" : ""}
+        >
+          <span className="sidebar-icon">📊</span>
+          {!collapsed && <span className="sidebar-label">Campaigns</span>}
+        </button>
+
+        <button
           className={`sidebar-item ${selectedMenu === "AdminPanel" ? "active" : ""}`}
           onClick={() => setSelectedMenu("AdminPanel")}
           title={collapsed ? "Admin Panel" : ""}

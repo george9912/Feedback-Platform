@@ -68,6 +68,8 @@ namespace UserService.Infrastructure.Services
             existingUser.LastName = userDto.LastName;
             existingUser.Email = userDto.Email;
             existingUser.Role = userDto.Role;
+            existingUser.Department = userDto.Department;
+            existingUser.UpdatedAt = DateTime.UtcNow;
 
             await _userRepository.UpdateAsync(existingUser);
             return true;
@@ -130,6 +132,7 @@ namespace UserService.Infrastructure.Services
                 FirstName = dto.FirstName ?? string.Empty,
                 LastName = dto.LastName ?? string.Empty,
                 Role = "Employee",
+                Department = string.Empty,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -170,6 +173,7 @@ namespace UserService.Infrastructure.Services
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
                 Role = "Employee",
+                Department = string.Empty,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };

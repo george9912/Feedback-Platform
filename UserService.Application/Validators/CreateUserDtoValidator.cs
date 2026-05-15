@@ -26,6 +26,10 @@ namespace UserService.Application.Validators
 
             RuleFor(x => x.Role)
                 .NotEmpty().WithMessage("Role is required");
+
+            RuleFor(x => x.Department)
+                .MaximumLength(100)
+                .WithMessage("Department can have at most 100 characters");
         }
     }
 }

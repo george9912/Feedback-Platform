@@ -1,11 +1,10 @@
-﻿using Azure.Messaging.ServiceBus;
-using FastEndpoints;
+﻿using FastEndpoints;
 using FeedbackService.API.Common;
 using FeedbackService.API.Common.Events;
+using FeedbackService.API.Common.Notifications;
 using FeedbackService.API.Features.Clients;
 using FeedbackService.API.Infrastructure;
 using FluentValidation;
-using System.Text.Json;
 using static FeedbackService.API.Features.Feedback.Create.Command;
 
 namespace FeedbackService.API.Features.Feedback.Create
@@ -15,12 +14,12 @@ namespace FeedbackService.API.Features.Feedback.Create
     {
         private readonly AppDbContext _db;
         private readonly IUserClient _userClient;
-        private readonly ServiceBusSender _sender;
-        public CreateFeedbackEndpoint(AppDbContext db, IUserClient userClient, ServiceBusSender sender)
+            private readonly IFeedbackEventPublisher _eventPublisher;
+        public CreateFeedbackEndpoint(AppDbContext db, IUserClient userClient, IFeedbackEventPublisher eventPublisher)
         {
             _db = db;
             _userClient = userClient;
-            _sender = sender;
+            _eventPublisher = eventPublisher;
         }
         public override void Configure()
         {
@@ -53,14 +52,7 @@ namespace FeedbackService.API.Features.Feedback.Create
                 CreatedAtUtc = DateTime.UtcNow
             };
 
-            var msg = new ServiceBusMessage(JsonSerializer.Serialize(evt))
-            {
-                MessageId = feedback.Id.ToString(),   // idempotency-friendly
-                Subject = "FeedbackCreated",
-                ContentType = "application/json"
-            };
-
-            await _sender.SendMessageAsync(msg, ct);
+            await _eventPublisher.PublishFeedbackCreatedAsync(evt, ct);
 
             await this.SendCreatedAtManual(
                 $"/api/feedback/{feedback.Id}",

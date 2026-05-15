@@ -15,6 +15,7 @@ namespace UserService.Application.DTOs
         public string Email { get; set; } = string.Empty;
         public string UserPrincipalName { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
+        public string Department { get; set; } = string.Empty;
         public string AzureAdObjectId { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
