@@ -2,7 +2,13 @@ import { useState } from "react";
 import { useMsal } from "@azure/msal-react";
 import "../styles/dashboard.css";
 
-function Sidebar({ selectedMenu, setSelectedMenu, collapsed, onToggleSidebar }) {
+function Sidebar({
+  selectedMenu,
+  setSelectedMenu,
+  collapsed,
+  onToggleSidebar,
+  onMenuSelect,
+}) {
   const [usersOpen, setUsersOpen] = useState(true);
   const { instance } = useMsal();
 
@@ -10,10 +16,28 @@ function Sidebar({ selectedMenu, setSelectedMenu, collapsed, onToggleSidebar }) 
     instance.logoutRedirect();
   };
 
+  const handleMenuSelect = (menuName) => {
+    setSelectedMenu(menuName);
+    onMenuSelect?.();
+  };
+
+  const handleUsersToggle = () => {
+    if (collapsed) {
+      onToggleSidebar?.();
+      return;
+    }
+
+    setUsersOpen((prev) => !prev);
+  };
+
   return (
-    <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
+    <aside className={`sidebar ${collapsed ? "collapsed" : ""}`} aria-label="Primary">
       <div className="sidebar-top">
-        <button className="sidebar-toggle" onClick={onToggleSidebar}>
+        <button
+          className="sidebar-toggle"
+          onClick={onToggleSidebar}
+          aria-label={collapsed ? "Open navigation" : "Collapse navigation"}
+        >
           ☰
         </button>
       </div>
@@ -21,8 +45,9 @@ function Sidebar({ selectedMenu, setSelectedMenu, collapsed, onToggleSidebar }) 
       <nav className="sidebar-nav">
         <button
           className={`sidebar-item ${selectedMenu === "Home" ? "active" : ""}`}
-          onClick={() => setSelectedMenu("Home")}
+          onClick={() => handleMenuSelect("Home")}
           title={collapsed ? "Home" : ""}
+          aria-current={selectedMenu === "Home" ? "page" : undefined}
         >
           <span className="sidebar-icon">🏠</span>
           {!collapsed && <span className="sidebar-label">Home</span>}
@@ -30,8 +55,9 @@ function Sidebar({ selectedMenu, setSelectedMenu, collapsed, onToggleSidebar }) 
 
         <button
           className={`sidebar-item ${selectedMenu === "Notifications" ? "active" : ""}`}
-          onClick={() => setSelectedMenu("Notifications")}
+          onClick={() => handleMenuSelect("Notifications")}
           title={collapsed ? "Notifications" : ""}
+          aria-current={selectedMenu === "Notifications" ? "page" : undefined}
         >
           <span className="sidebar-icon">🔔</span>
           {!collapsed && <span className="sidebar-label">Notifications</span>}
@@ -39,8 +65,9 @@ function Sidebar({ selectedMenu, setSelectedMenu, collapsed, onToggleSidebar }) 
 
         <button
           className={`sidebar-item ${selectedMenu === "Feedbacks" ? "active" : ""}`}
-          onClick={() => setSelectedMenu("Feedbacks")}
+          onClick={() => handleMenuSelect("Feedbacks")}
           title={collapsed ? "Feedbacks" : ""}
+          aria-current={selectedMenu === "Feedbacks" ? "page" : undefined}
         >
           <span className="sidebar-icon">💬</span>
           {!collapsed && <span className="sidebar-label">Feedbacks</span>}
@@ -48,8 +75,9 @@ function Sidebar({ selectedMenu, setSelectedMenu, collapsed, onToggleSidebar }) 
 
         <button
           className={`sidebar-item ${selectedMenu === "Campaigns" ? "active" : ""}`}
-          onClick={() => setSelectedMenu("Campaigns")}
+          onClick={() => handleMenuSelect("Campaigns")}
           title={collapsed ? "Campaigns" : ""}
+          aria-current={selectedMenu === "Campaigns" ? "page" : undefined}
         >
           <span className="sidebar-icon">📊</span>
           {!collapsed && <span className="sidebar-label">Campaigns</span>}
@@ -57,8 +85,9 @@ function Sidebar({ selectedMenu, setSelectedMenu, collapsed, onToggleSidebar }) 
 
         <button
           className={`sidebar-item ${selectedMenu === "AdminPanel" ? "active" : ""}`}
-          onClick={() => setSelectedMenu("AdminPanel")}
+          onClick={() => handleMenuSelect("AdminPanel")}
           title={collapsed ? "Admin Panel" : ""}
+          aria-current={selectedMenu === "AdminPanel" ? "page" : undefined}
         >
           <span className="sidebar-icon">🛡️</span>
           {!collapsed && <span className="sidebar-label">Admin Panel</span>}
@@ -69,8 +98,10 @@ function Sidebar({ selectedMenu, setSelectedMenu, collapsed, onToggleSidebar }) 
             className={`sidebar-item ${
               selectedMenu === "Directory" || selectedMenu === "MyProfile" ? "active" : ""
             }`}
-            onClick={() => setUsersOpen(!usersOpen)}
+            onClick={handleUsersToggle}
             title={collapsed ? "Users" : ""}
+            aria-expanded={!collapsed && usersOpen}
+            aria-controls="sidebar-users-submenu"
           >
             <span className="sidebar-icon">👥</span>
             {!collapsed && (
@@ -82,17 +113,19 @@ function Sidebar({ selectedMenu, setSelectedMenu, collapsed, onToggleSidebar }) 
           </button>
 
           {!collapsed && usersOpen && (
-            <div className="sidebar-submenu">
+            <div className="sidebar-submenu" id="sidebar-users-submenu">
               <button
                 className={`sidebar-subitem ${selectedMenu === "Directory" ? "active-sub" : ""}`}
-                onClick={() => setSelectedMenu("Directory")}
+                onClick={() => handleMenuSelect("Directory")}
+                aria-current={selectedMenu === "Directory" ? "page" : undefined}
               >
                 Directory
               </button>
 
               <button
                 className={`sidebar-subitem ${selectedMenu === "MyProfile" ? "active-sub" : ""}`}
-                onClick={() => setSelectedMenu("MyProfile")}
+                onClick={() => handleMenuSelect("MyProfile")}
+                aria-current={selectedMenu === "MyProfile" ? "page" : undefined}
               >
                 My Profile
               </button>

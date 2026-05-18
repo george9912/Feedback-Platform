@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
 import Home from "../pages/Home";
@@ -14,7 +14,23 @@ import "../styles/dashboard.css";
 function DashboardLayout() {
   const [selectedMenu, setSelectedMenu] = useState("Home");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const [prefilledFeedbackRecipient, setPrefilledFeedbackRecipient] = useState(null);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 900px)");
+
+    const handleViewportChange = (event) => {
+      setIsMobile(event.matches);
+      setSidebarCollapsed(event.matches);
+    };
+
+    mediaQuery.addEventListener("change", handleViewportChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleViewportChange);
+    };
+  }, []);
 
   const handleGiveFeedback = (user) => {
     setPrefilledFeedbackRecipient(user);
@@ -23,6 +39,16 @@ function DashboardLayout() {
 
   const clearPrefilledRecipient = () => {
     setPrefilledFeedbackRecipient(null);
+  };
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed((prev) => !prev);
+  };
+
+  const handleMenuSelectionComplete = () => {
+    if (isMobile) {
+      setSidebarCollapsed(true);
+    }
   };
 
   const renderPage = () => {
@@ -53,13 +79,25 @@ function DashboardLayout() {
 
   return (
     <div className="app-shell">
-      <Topbar />
+      <Topbar
+        isMobile={isMobile}
+        onToggleSidebar={toggleSidebar}
+        sidebarCollapsed={sidebarCollapsed}
+      />
       <div className="app-body">
+        {isMobile && !sidebarCollapsed && (
+          <button
+            className="sidebar-backdrop"
+            onClick={() => setSidebarCollapsed(true)}
+            aria-label="Close navigation"
+          />
+        )}
         <Sidebar
           selectedMenu={selectedMenu}
           setSelectedMenu={setSelectedMenu}
           collapsed={sidebarCollapsed}
-          onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+          onToggleSidebar={toggleSidebar}
+          onMenuSelect={handleMenuSelectionComplete}
         />
         <main className="page-content">{renderPage()}</main>
            <ChatWidget />

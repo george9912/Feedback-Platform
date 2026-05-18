@@ -54,6 +54,9 @@ function Campaigns() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [campaignSearch, setCampaignSearch] = useState("");
+  const [campaignStatusFilter, setCampaignStatusFilter] = useState("All");
+  const [showCampaignForm, setShowCampaignForm] = useState(false);
   const [reportDialog, setReportDialog] = useState({
     open: false,
     campaign: null,
@@ -107,6 +110,27 @@ function Campaigns() {
       .map((id) => participantsMap.get(id))
       .filter(Boolean);
   }, [selectedCampaignDetails, users]);
+
+  const filteredCampaigns = useMemo(() => {
+    const query = campaignSearch.trim().toLowerCase();
+
+    return campaigns.filter((campaign) => {
+      const matchesStatus =
+        campaignStatusFilter === "All" ||
+        (campaign.status || "").toUpperCase() === campaignStatusFilter.toUpperCase();
+
+      if (!matchesStatus) {
+        return false;
+      }
+
+      if (!query) {
+        return true;
+      }
+
+      const searchable = `${campaign.name || ""} ${campaign.description || ""}`.toLowerCase();
+      return searchable.includes(query);
+    });
+  }, [campaigns, campaignSearch, campaignStatusFilter]);
 
   const loadData = async () => {
     if (!accounts.length) {
@@ -275,6 +299,7 @@ function Campaigns() {
       }
 
       resetCampaignForm();
+      setShowCampaignForm(false);
       await loadData();
     } catch (err) {
       console.error(err);
@@ -291,6 +316,7 @@ function Campaigns() {
 
     try {
       const details = await getCampaignById(campaignId);
+      setShowCampaignForm(true);
       setEditingCampaignId(details.id);
       setName(details.name || "");
       setDescription(details.description || "");
@@ -329,6 +355,14 @@ function Campaigns() {
   };
 
   const handleActivateCampaign = async (campaignId) => {
+    const confirmed = window.confirm(
+      "Activate this campaign now? Participants will start receiving campaign reminders.",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
     setBusy(true);
     setError("");
     setMessage("");
@@ -346,6 +380,14 @@ function Campaigns() {
   };
 
   const handleCloseCampaign = async (campaignId) => {
+    const confirmed = window.confirm(
+      "Close this campaign? After closing, no new submissions can be made and final reporting is generated.",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
     setBusy(true);
     setError("");
     setMessage("");
@@ -483,167 +525,211 @@ function Campaigns() {
         <div className="feedback-history-wrap">
           <h2 className="section-title feedback-history-title">Admin Campaign Management</h2>
 
-          <form className="feedback-form" onSubmit={handleCreateOrUpdateCampaign}>
-            <div className="feedback-grid">
-              <label className="feedback-field">
-                <span className="feedback-label">Name</span>
-                <input
-                  className="feedback-select"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  disabled={busy}
-                />
-              </label>
+          <div className="module-toolbar">
+            <button
+              type="button"
+              className="refresh-users-button"
+              onClick={() => setShowCampaignForm((prev) => !prev)}
+              disabled={busy}
+            >
+              {showCampaignForm ? "Hide Campaign Builder" : "Open Campaign Builder"}
+            </button>
 
-              <label className="feedback-field">
-                <span className="feedback-label">Minimum Required Submissions</span>
-                <input
-                  className="feedback-select"
-                  type="number"
-                  min={1}
-                  value={minimumRequiredSubmissions}
-                  onChange={(e) => setMinimumRequiredSubmissions(Number(e.target.value))}
-                  disabled={busy}
-                />
-              </label>
+            <input
+              className="search-input"
+              value={campaignSearch}
+              onChange={(e) => setCampaignSearch(e.target.value)}
+              placeholder="Search by campaign name or description"
+              disabled={busy}
+            />
 
-              <label className="feedback-field">
-                <span className="feedback-label">Audience Type</span>
-                <select
-                  className="feedback-select"
-                  value={audienceType}
-                  onChange={(e) => setAudienceType(e.target.value)}
-                  disabled={busy}
-                >
-                  <option value="AllUsers">All Users</option>
-                  <option value="Roles">Specific Roles</option>
-                  <option value="Departments">Departments</option>
-                  <option value="SelectedUsers">Selected Users</option>
-                </select>
-              </label>
-            </div>
+            <select
+              className="feedback-select module-toolbar-select"
+              value={campaignStatusFilter}
+              onChange={(e) => setCampaignStatusFilter(e.target.value)}
+              disabled={busy}
+            >
+              <option value="All">All Statuses</option>
+              <option value="Draft">Draft</option>
+              <option value="Active">Active</option>
+              <option value="Closed">Closed</option>
+            </select>
+          </div>
 
-            <label className="feedback-field">
-              <span className="feedback-label">Description</span>
-              <textarea
-                className="feedback-textarea"
-                rows={4}
-                maxLength={2000}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                disabled={busy}
-              />
-            </label>
+          <p className="section-text">Showing {filteredCampaigns.length} of {campaigns.length} campaigns.</p>
 
-            <div className="feedback-grid">
-              <label className="feedback-field">
-                <span className="feedback-label">Start Date (UTC)</span>
-                <input
-                  className="feedback-select"
-                  type="datetime-local"
-                  value={startDateUtc}
-                  onChange={(e) => setStartDateUtc(e.target.value)}
-                  disabled={busy}
-                />
-              </label>
+          {showCampaignForm && (
+            <form className="feedback-form" onSubmit={handleCreateOrUpdateCampaign}>
+              <div className="feedback-grid">
+                <label className="feedback-field">
+                  <span className="feedback-label">Name</span>
+                  <input
+                    className="feedback-select"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    disabled={busy}
+                  />
+                </label>
 
-              <label className="feedback-field">
-                <span className="feedback-label">End Date (UTC)</span>
-                <input
-                  className="feedback-select"
-                  type="datetime-local"
-                  value={endDateUtc}
-                  onChange={(e) => setEndDateUtc(e.target.value)}
-                  disabled={busy}
-                />
-              </label>
+                <label className="feedback-field">
+                  <span className="feedback-label">Minimum Required Submissions</span>
+                  <input
+                    className="feedback-select"
+                    type="number"
+                    min={1}
+                    value={minimumRequiredSubmissions}
+                    onChange={(e) => setMinimumRequiredSubmissions(Number(e.target.value))}
+                    disabled={busy}
+                  />
+                </label>
 
-              <label className="view-as-toggle" style={{ marginTop: "2rem" }}>
-                <input
-                  type="checkbox"
-                  checked={isAnonymous}
-                  onChange={(e) => setIsAnonymous(e.target.checked)}
-                  disabled={busy}
-                />
-                <span>Anonymous submissions</span>
-              </label>
-            </div>
-
-            {audienceType === "Roles" && (
-              <div className="tag-picker-wrap">
-                {roleOptions.map((role) => (
-                  <button
-                    key={role}
-                    type="button"
-                    className={`tag-chip ${selectedRoles.includes(role) ? "active" : ""}`}
-                    onClick={() => toggleSelection(setSelectedRoles, role)}
+                <label className="feedback-field">
+                  <span className="feedback-label">Audience Type</span>
+                  <select
+                    className="feedback-select"
+                    value={audienceType}
+                    onChange={(e) => setAudienceType(e.target.value)}
                     disabled={busy}
                   >
-                    {role}
-                  </button>
-                ))}
+                    <option value="AllUsers">All Users</option>
+                    <option value="Roles">Specific Roles</option>
+                    <option value="Departments">Departments</option>
+                    <option value="SelectedUsers">Selected Users</option>
+                  </select>
+                </label>
               </div>
-            )}
 
-            {audienceType === "Departments" && (
-              <div className="tag-picker-wrap">
-                {departmentOptions.map((department) => (
-                  <button
-                    key={department}
-                    type="button"
-                    className={`tag-chip ${selectedDepartments.includes(department) ? "active" : ""}`}
-                    onClick={() => toggleSelection(setSelectedDepartments, department)}
-                    disabled={busy}
-                  >
-                    {department}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {audienceType === "SelectedUsers" && (
               <label className="feedback-field">
-                <span className="feedback-label">Selected Users</span>
-                <select
-                  className="feedback-select"
-                  multiple
-                  value={selectedUserIds}
-                  onChange={(e) => {
-                    const values = Array.from(e.target.selectedOptions).map((opt) => opt.value);
-                    setSelectedUserIds(values);
+                <span className="feedback-label">Description</span>
+                <textarea
+                  className="feedback-textarea"
+                  rows={4}
+                  maxLength={2000}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  disabled={busy}
+                />
+              </label>
+
+              <div className="feedback-grid">
+                <label className="feedback-field">
+                  <span className="feedback-label">Start Date (UTC)</span>
+                  <input
+                    className="feedback-select"
+                    type="datetime-local"
+                    value={startDateUtc}
+                    onChange={(e) => setStartDateUtc(e.target.value)}
+                    disabled={busy}
+                  />
+                </label>
+
+                <label className="feedback-field">
+                  <span className="feedback-label">End Date (UTC)</span>
+                  <input
+                    className="feedback-select"
+                    type="datetime-local"
+                    value={endDateUtc}
+                    onChange={(e) => setEndDateUtc(e.target.value)}
+                    disabled={busy}
+                  />
+                </label>
+
+                <label className="view-as-toggle" style={{ marginTop: "2rem" }}>
+                  <input
+                    type="checkbox"
+                    checked={isAnonymous}
+                    onChange={(e) => setIsAnonymous(e.target.checked)}
+                    disabled={busy}
+                  />
+                  <span>Anonymous submissions</span>
+                </label>
+              </div>
+
+              {audienceType === "Roles" && (
+                <div className="tag-picker-wrap">
+                  {roleOptions.map((role) => (
+                    <button
+                      key={role}
+                      type="button"
+                      className={`tag-chip ${selectedRoles.includes(role) ? "active" : ""}`}
+                      onClick={() => toggleSelection(setSelectedRoles, role)}
+                      disabled={busy}
+                    >
+                      {role}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {audienceType === "Departments" && (
+                <div className="tag-picker-wrap">
+                  {departmentOptions.map((department) => (
+                    <button
+                      key={department}
+                      type="button"
+                      className={`tag-chip ${selectedDepartments.includes(department) ? "active" : ""}`}
+                      onClick={() => toggleSelection(setSelectedDepartments, department)}
+                      disabled={busy}
+                    >
+                      {department}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {audienceType === "SelectedUsers" && (
+                <label className="feedback-field">
+                  <span className="feedback-label">Selected Users</span>
+                  <select
+                    className="feedback-select"
+                    multiple
+                    value={selectedUserIds}
+                    onChange={(e) => {
+                      const values = Array.from(e.target.selectedOptions).map((opt) => opt.value);
+                      setSelectedUserIds(values);
+                    }}
+                    disabled={busy}
+                    style={{ minHeight: "180px" }}
+                  >
+                    {users.map((user) => {
+                      const nameLabel =
+                        user.displayName ||
+                        `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+                        user.email;
+                      return (
+                        <option key={user.id} value={user.id}>
+                          {nameLabel}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </label>
+              )}
+
+              <p className="section-text">Resolved participants: {resolvedParticipantIds.length}</p>
+
+              <div className="feedback-actions">
+                <button className="refresh-users-button" type="submit" disabled={busy}>
+                  {editingCampaignId ? "Save Campaign" : "Create Campaign"}
+                </button>
+
+                <button
+                  className="pagination-button"
+                  type="button"
+                  onClick={() => {
+                    resetCampaignForm();
+                    setShowCampaignForm(false);
                   }}
                   disabled={busy}
-                  style={{ minHeight: "180px" }}
                 >
-                  {users.map((user) => {
-                    const nameLabel = user.displayName || `${user.firstName || ""} ${user.lastName || ""}`.trim() || user.email;
-                    return (
-                      <option key={user.id} value={user.id}>
-                        {nameLabel}
-                      </option>
-                    );
-                  })}
-                </select>
-              </label>
-            )}
-
-            <p className="section-text">Resolved participants: {resolvedParticipantIds.length}</p>
-
-            <div className="feedback-actions">
-              <button className="refresh-users-button" type="submit" disabled={busy}>
-                {editingCampaignId ? "Save Campaign" : "Create Campaign"}
-              </button>
-
-              {editingCampaignId && (
-                <button className="pagination-button" type="button" onClick={resetCampaignForm} disabled={busy}>
-                  Cancel Edit
+                  {editingCampaignId ? "Cancel Edit" : "Cancel"}
                 </button>
-              )}
-            </div>
-          </form>
+              </div>
+            </form>
+          )}
 
           <div className="directory-grid">
-            {campaigns.map((campaign) => (
+            {filteredCampaigns.map((campaign) => (
               <div className="user-card" key={campaign.id}>
                 <div className="user-card-content">
                   <h3 className="user-card-name">{campaign.name}</h3>
@@ -684,7 +770,7 @@ function Campaigns() {
 
                     {campaign.status === "Active" && (
                       <button
-                        className="pagination-button"
+                        className="pagination-button danger-button"
                         type="button"
                         onClick={() => handleCloseCampaign(campaign.id)}
                         disabled={busy}
@@ -697,6 +783,10 @@ function Campaigns() {
               </div>
             ))}
           </div>
+
+          {!filteredCampaigns.length && (
+            <p className="section-text">No campaigns match your current search/filter criteria.</p>
+          )}
         </div>
       )}
 

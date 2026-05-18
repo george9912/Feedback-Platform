@@ -1,6 +1,6 @@
 import { useMsal } from "@azure/msal-react";
 
-function Topbar() {
+function Topbar({ isMobile, onToggleSidebar, sidebarCollapsed }) {
   const { accounts } = useMsal();
 
   const account = accounts[0];
@@ -17,6 +17,16 @@ function Topbar() {
     <div className="topbar">
       {/* LEFT SIDE */}
       <div className="topbar-left">
+        {isMobile && (
+          <button
+            className="icon-button"
+            onClick={onToggleSidebar}
+            aria-label={sidebarCollapsed ? "Open navigation" : "Close navigation"}
+            title={sidebarCollapsed ? "Open navigation" : "Close navigation"}
+          >
+            ☰
+          </button>
+        )}
         <div className="brand">
           <div className="brand-logo">FH</div>
           <div className="brand-text-wrap">

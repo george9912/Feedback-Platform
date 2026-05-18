@@ -17,6 +17,9 @@ function AdminPanel() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("ALL");
+  const [showOnlyChanged, setShowOnlyChanged] = useState(false);
 
   const sortedUsers = useMemo(() => {
     return [...users].sort((a, b) => {
@@ -63,14 +66,35 @@ function AdminPanel() {
     });
   }, [sortedUsers, roleDrafts]);
 
-  const totalPages = Math.max(1, Math.ceil(sortedUsers.length / PAGE_SIZE));
+  const filteredUsers = useMemo(() => {
+    const changedIds = new Set(changedUsers.map((u) => u.id));
+    const query = searchQuery.trim().toLowerCase();
+
+    return sortedUsers.filter((u) => {
+      const nextRole = (roleDrafts[u.id] || "EMPLOYEE").toUpperCase();
+      const userName = (u.displayName || `${u.firstName || ""} ${u.lastName || ""}`.trim() || "").toLowerCase();
+      const userEmail = (u.email || "").toLowerCase();
+
+      const matchesQuery = !query || userName.includes(query) || userEmail.includes(query);
+      const matchesRole = roleFilter === "ALL" || nextRole === roleFilter;
+      const matchesChanged = !showOnlyChanged || changedIds.has(u.id);
+
+      return matchesQuery && matchesRole && matchesChanged;
+    });
+  }, [sortedUsers, changedUsers, roleDrafts, searchQuery, roleFilter, showOnlyChanged]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, roleFilter, showOnlyChanged]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
   const pageUsers = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
-    return sortedUsers.slice(start, start + PAGE_SIZE);
-  }, [sortedUsers, currentPage]);
+    return filteredUsers.slice(start, start + PAGE_SIZE);
+  }, [filteredUsers, currentPage]);
 
-  const startIndex = sortedUsers.length ? (currentPage - 1) * PAGE_SIZE + 1 : 0;
-  const endIndex = Math.min(currentPage * PAGE_SIZE, sortedUsers.length);
+  const startIndex = filteredUsers.length ? (currentPage - 1) * PAGE_SIZE + 1 : 0;
+  const endIndex = Math.min(currentPage * PAGE_SIZE, filteredUsers.length);
 
   const unlockPanel = () => {
     setError("");
@@ -95,7 +119,7 @@ function AdminPanel() {
       const name = u.displayName || `${u.firstName || ""} ${u.lastName || ""}`.trim() || u.email || "this user";
       const oldRole = (u.role || "EMPLOYEE").toUpperCase();
       const newRole = (roleDrafts[u.id] || "EMPLOYEE").toUpperCase();
-      return `Are you sure you want to change the role of \"${name}\" from \"${oldRole}\" to \"${newRole}\"?`;
+      return `Are you sure you want to change the role of "${name}" from "${oldRole}" to "${newRole}"?`;
     });
 
     const confirmed = window.confirm(confirmationLines.join("\n"));
@@ -157,6 +181,43 @@ function AdminPanel() {
 
       {isLoading && <p className="section-text">Loading...</p>}
 
+      <div className="module-toolbar">
+        <input
+          className="search-input"
+          type="search"
+          placeholder="Search by user name or email"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          disabled={isLoading}
+        />
+
+        <select
+          className="feedback-select module-toolbar-select"
+          value={roleFilter}
+          onChange={(e) => setRoleFilter(e.target.value)}
+          disabled={isLoading}
+        >
+          <option value="ALL">All roles</option>
+          {ROLE_OPTIONS.map((role) => (
+            <option key={role} value={role}>
+              {role}
+            </option>
+          ))}
+        </select>
+
+        <label className="view-as-toggle module-inline-toggle">
+          <input
+            type="checkbox"
+            checked={showOnlyChanged}
+            onChange={(e) => setShowOnlyChanged(e.target.checked)}
+            disabled={isLoading}
+          />
+          <span>Pending changes only</span>
+        </label>
+      </div>
+
+      <p className="section-text">Showing {filteredUsers.length} of {sortedUsers.length} users.</p>
+
       <div className="admin-table-wrap">
         <table className="admin-table">
           <thead>
@@ -171,15 +232,18 @@ function AdminPanel() {
           <tbody>
             {pageUsers.map((u) => {
               const name = u.displayName || `${u.firstName || ""} ${u.lastName || ""}`.trim() || "-";
+              const oldRole = (u.role || "EMPLOYEE").toUpperCase();
+              const draftRole = (roleDrafts[u.id] || "EMPLOYEE").toUpperCase();
+              const isChanged = oldRole !== draftRole;
               return (
-                <tr key={u.id}>
+                <tr key={u.id} className={isChanged ? "admin-row-changed" : ""}>
                   <td>{name}</td>
                   <td>{u.email || "-"}</td>
                   <td>-</td>
                   <td>
                     <select
                       className="feedback-select"
-                      value={roleDrafts[u.id] || "EMPLOYEE"}
+                      value={draftRole}
                       onChange={(e) => {
                         const value = e.target.value;
                         setRoleDrafts((prev) => ({ ...prev, [u.id]: value }));
@@ -202,7 +266,7 @@ function AdminPanel() {
 
       <div className="pagination-wrap">
         <div className="pagination-info">
-          Showing {startIndex}-{endIndex} of {sortedUsers.length} users
+          Showing {startIndex}-{endIndex} of {filteredUsers.length} users
         </div>
 
         <div className="pagination-controls">
