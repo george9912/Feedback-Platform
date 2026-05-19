@@ -383,6 +383,90 @@ body {
   line-height: 1.5;
 }
 
+.notifications-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.unread-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.12);
+  color: #1e40af;
+  font-weight: 600;
+}
+
+.notification-actions {
+  margin-top: 12px;
+}
+
+.notification-actions-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.unread-pill {
+  background: rgba(37, 99, 235, 0.14);
+  color: #1d4ed8;
+}
+
+.read-badge {
+  background: rgba(15, 23, 42, 0.12);
+  color: #475569;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(3px);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.feedback-modal {
+  width: min(720px, 100%);
+  max-height: 85vh;
+  overflow: auto;
+  border-radius: 20px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 30px 60px rgba(15, 23, 42, 0.25);
+}
+
+.feedback-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.modal-title {
+  font-size: 24px;
+  margin: 0;
+}
+
+.feedback-modal-content p {
+  margin: 8px 0;
+}
+
+.feedback-modal-comment {
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(241, 245, 249, 0.75);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
 .directory-toolbar {
   margin-bottom: 20px;
 }

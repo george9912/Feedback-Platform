@@ -4,12 +4,28 @@ services:
     build:
       context: .
       dockerfile: FeedbackService.API/Dockerfile
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
   userservice.api:
     image: ${DOCKER_REGISTRY-}userserviceapi
     build:
       context: .
       dockerfile: UserService.API/Dockerfile
+
+  notificationworker:
+    image: ${DOCKER_REGISTRY-}notificationworker
+    build:
+      context: .
+      dockerfile: NotificationWorker/Dockerfile
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -21,6 +37,22 @@ services:
       - "1433:1433"
     healthcheck:
       test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'GeoParola2025!' -Q 'SELECT 1' -C || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
       interval: 10s
       timeout: 5s
       retries: 10

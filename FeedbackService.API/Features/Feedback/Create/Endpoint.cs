@@ -1,9 +1,5 @@
 ﻿using FastEndpoints;
 using FeedbackService.API.Common;
-using FeedbackService.API.Common.Events;
-using FeedbackService.API.Common.Notifications;
-using FeedbackService.API.Features.Clients;
-using FeedbackService.API.Infrastructure;
 using FluentValidation;
 using static FeedbackService.API.Features.Feedback.Create.Command;
 
@@ -12,14 +8,11 @@ namespace FeedbackService.API.Features.Feedback.Create
     // FAST ENDPOINTS
     public sealed class CreateFeedbackEndpoint : Endpoint<CreateFeedbackRequest, CreateFeedbackResponse>
     {
-        private readonly AppDbContext _db;
-        private readonly IUserClient _userClient;
-            private readonly IFeedbackEventPublisher _eventPublisher;
-        public CreateFeedbackEndpoint(AppDbContext db, IUserClient userClient, IFeedbackEventPublisher eventPublisher)
+        private readonly Handler _handler;
+
+        public CreateFeedbackEndpoint(Handler handler)
         {
-            _db = db;
-            _userClient = userClient;
-            _eventPublisher = eventPublisher;
+            _handler = handler;
         }
         public override void Configure()
         {
@@ -34,29 +27,11 @@ namespace FeedbackService.API.Features.Feedback.Create
 
         public override async Task HandleAsync(CreateFeedbackRequest req, CancellationToken ct)
         {
-            var visibility = Enum.TryParse<FeedbackVisibility>(req.Visibility, true, out var parsed)
-                ? parsed
-                : FeedbackVisibility.Public;
-
-            var feedback = new Feedback(req.UserId, req.Rating, req.Comment, visibility, req.Tags);
-            _db.Feedbacks.Add(feedback);
-            await _db.SaveChangesAsync(ct);
-
-            // publish event -> Service Bus
-            var evt = new FeedbackCreatedEvent
-            {
-                FeedbackId = feedback.Id,
-                UserId = feedback.UserId,
-                Rating = feedback.Rating,
-                Comment = feedback.Comment,
-                CreatedAtUtc = DateTime.UtcNow
-            };
-
-            await _eventPublisher.PublishFeedbackCreatedAsync(evt, ct);
+            var result = await _handler.Handle(req, ct);
 
             await this.SendCreatedAtManual(
-                $"/api/feedback/{feedback.Id}",
-                new CreateFeedbackResponse(feedback.Id),
+                $"/api/feedback/{result.Id}",
+                result,
                 ct);
         }
 

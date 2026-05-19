@@ -148,6 +148,7 @@ function Feedbacks({ preselectedRecipient = null, onPreselectedRecipientConsumed
     try {
       await createFeedback({
         userId: selectedUserId,
+        submittedByUserId: myProfile?.id || null,
         rating: Number(rating),
         comment,
         visibility,
@@ -189,56 +190,6 @@ function Feedbacks({ preselectedRecipient = null, onPreselectedRecipientConsumed
         <p className="section-text">Create feedback for a colleague and review existing entries.</p>
       </div>
 
-      <div className="view-as-wrap">
-        <label className="view-as-toggle">
-          <input
-            type="checkbox"
-            checked={viewAsEnabled}
-            onChange={(e) => setViewAsEnabled(e.target.checked)}
-          />
-          <span>View As (testing mode)</span>
-        </label>
-
-        {viewAsEnabled && (
-          <div className="view-as-grid">
-            <label className="feedback-field">
-              <span className="feedback-label">Viewer User</span>
-              <select
-                className="feedback-select"
-                value={viewAsUserId}
-                onChange={(e) => setViewAsUserId(e.target.value)}
-              >
-                <option value="">Current profile</option>
-                {directory.map((u) => {
-                  const name = u.displayName || `${u.firstName || ""} ${u.lastName || ""}`.trim() || u.email;
-                  return (
-                    <option key={u.id} value={u.id}>
-                      {name}
-                    </option>
-                  );
-                })}
-              </select>
-            </label>
-
-            <label className="feedback-field">
-              <span className="feedback-label">Viewer Role</span>
-              <select
-                className="feedback-select"
-                value={viewAsRole}
-                onChange={(e) => setViewAsRole(e.target.value)}
-              >
-                <option value="EMPLOYEE">EMPLOYEE</option>
-                <option value="HR">HR</option>
-                <option value="ADMIN">ADMIN</option>
-              </select>
-            </label>
-          </div>
-        )}
-
-        <p className="section-text">
-          Active viewer: role {effectiveViewerRole}, user {effectiveViewerUserId || "(current)"}
-        </p>
-      </div>
 
       <form className="feedback-form" onSubmit={handleSubmit}>
         <div className="feedback-grid">

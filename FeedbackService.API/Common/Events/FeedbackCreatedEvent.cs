@@ -2,10 +2,11 @@
 {
     public sealed class FeedbackCreatedEvent
     {
+        public Guid EventId { get; set; }
         public Guid FeedbackId { get; set; }
-        public Guid UserId { get; set; }
-        public int Rating { get; set; }
-        public string? Comment { get; set; }
-        public DateTime CreatedAtUtc { get; set; }
+        public Guid FromUserId { get; set; }
+        public Guid ToUserId { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string? CorrelationId { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using FeedbackService.API.Features.Feedback;
 using FeedbackService.API.Features.Feedback.Campaign;
+using FeedbackService.API.Features.Notifications;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Reflection.Emit;
@@ -11,6 +12,7 @@ namespace FeedbackService.API.Infrastructure
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<Feedback> Feedbacks => Set<Feedback>();
+        public DbSet<UserNotification> UserNotifications => Set<UserNotification>();
         public DbSet<FeedbackCampaign> Campaigns => Set<FeedbackCampaign>();
         public DbSet<CampaignAudienceRule> CampaignAudienceRules => Set<CampaignAudienceRule>();
         public DbSet<CampaignParticipant> CampaignParticipants => Set<CampaignParticipant>();
@@ -33,6 +35,16 @@ namespace FeedbackService.API.Infrastructure
                     .HasDefaultValue(string.Empty);
                 b.HasIndex(x => x.CampaignId);
                 b.HasIndex(x => new { x.CampaignId, x.SubmittedByUserId });
+            });
+
+            modelBuilder.Entity<UserNotification>(b =>
+            {
+                b.ToTable("UserNotifications");
+                b.HasKey(x => x.Id);
+                b.Property(x => x.Message).HasMaxLength(500).IsRequired();
+                b.HasIndex(x => x.EventId).IsUnique();
+                b.HasIndex(x => new { x.RecipientUserId, x.CreatedAtUtc });
+                b.HasIndex(x => new { x.RecipientUserId, x.IsRead });
             });
 
             modelBuilder.Entity<FeedbackCampaign>(b =>

@@ -14,7 +14,7 @@ public sealed class NoOpFeedbackEventPublisher : IFeedbackEventPublisher
     public Task PublishFeedbackCreatedAsync(FeedbackCreatedEvent evt, CancellationToken ct)
     {
         _logger.LogInformation(
-            "Service Bus disabled. FeedbackCreated event not published for FeedbackId={FeedbackId}",
+            "Feedback event publishing is disabled. FeedbackCreated event not published for FeedbackId={FeedbackId}",
             evt.FeedbackId);
 
         return Task.CompletedTask;

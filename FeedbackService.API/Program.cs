@@ -8,6 +8,7 @@ using FeedbackService.API.Features.Feedback.Delete;
 using FeedbackService.API.Features.Feedback.GetById;
 using FeedbackService.API.Features.Feedback.ListByUser;
 using FeedbackService.API.Features.Feedback.Update;
+using FeedbackService.API.Features.Notifications;
 using FeedbackService.API.Infrastructure;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +29,16 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
         sqlOptions => sqlOptions.EnableRetryOnFailure()
     ));
 
+var rabbitMqEnabled = builder.Configuration.GetValue<bool?>("RabbitMq:Enabled") ?? true;
+if (rabbitMqEnabled)
+{
+    builder.Services.AddSingleton<IFeedbackEventPublisher, RabbitMqFeedbackEventPublisher>();
+}
+else
+{
+    builder.Services.AddSingleton<IFeedbackEventPublisher, NoOpFeedbackEventPublisher>();
+}
+
 var serviceBusConnectionString = builder.Configuration["ServiceBus:ConnectionString"];
 var serviceBusEnabled = builder.Configuration.GetValue<bool?>("ServiceBus:Enabled")
     ?? !string.IsNullOrWhiteSpace(serviceBusConnectionString);
@@ -35,19 +46,17 @@ var serviceBusEnabled = builder.Configuration.GetValue<bool?>("ServiceBus:Enable
 if (serviceBusEnabled && !string.IsNullOrWhiteSpace(serviceBusConnectionString))
 {
     builder.Services.AddSingleton(_ => new Azure.Messaging.ServiceBus.ServiceBusClient(serviceBusConnectionString));
-    builder.Services.AddSingleton<IFeedbackEventPublisher, ServiceBusFeedbackEventPublisher>();
     builder.Services.AddSingleton<ICampaignNotificationDispatcher, CampaignNotificationDispatcher>();
 }
 else
 {
-    builder.Services.AddSingleton<IFeedbackEventPublisher, NoOpFeedbackEventPublisher>();
     builder.Services.AddSingleton<ICampaignNotificationDispatcher, NoOpCampaignNotificationDispatcher>();
 }
 
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 // Handlers
-//builder.Services.AddScoped<FeedbackService.API.Features.Feedback.Create.Handler>();
+builder.Services.AddScoped<FeedbackService.API.Features.Feedback.Create.Handler>();
 builder.Services.AddScoped<FeedbackService.API.Features.Feedback.GetById.Handler>();
 builder.Services.AddScoped<FeedbackService.API.Features.Feedback.ListByUser.Handler>();
 builder.Services.AddScoped<FeedbackService.API.Features.Feedback.Delete.Handler>();
@@ -92,6 +101,34 @@ using (var scope = app.Services.CreateScope())
             Thread.Sleep(5000);
         }
     }
+
+    const string createUserNotificationsTableSql = """
+    IF OBJECT_ID('dbo.UserNotifications', 'U') IS NULL
+    BEGIN
+        CREATE TABLE [dbo].[UserNotifications] (
+            [Id] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+            [EventId] UNIQUEIDENTIFIER NOT NULL,
+            [RecipientUserId] UNIQUEIDENTIFIER NOT NULL,
+            [ActorUserId] UNIQUEIDENTIFIER NOT NULL,
+            [FeedbackId] UNIQUEIDENTIFIER NOT NULL,
+            [Message] NVARCHAR(500) NOT NULL,
+            [IsRead] BIT NOT NULL,
+            [CreatedAtUtc] DATETIME2 NOT NULL,
+            [ReadAtUtc] DATETIME2 NULL
+        );
+
+        CREATE UNIQUE INDEX [IX_UserNotifications_EventId]
+            ON [dbo].[UserNotifications]([EventId]);
+
+        CREATE INDEX [IX_UserNotifications_RecipientUserId_CreatedAtUtc]
+            ON [dbo].[UserNotifications]([RecipientUserId], [CreatedAtUtc]);
+
+        CREATE INDEX [IX_UserNotifications_RecipientUserId_IsRead]
+            ON [dbo].[UserNotifications]([RecipientUserId], [IsRead]);
+    END
+    """;
+
+    dbContext.Database.ExecuteSqlRaw(createUserNotificationsTableSql);
 }
 
 app.UseSwagger();
@@ -114,5 +151,6 @@ app.MapGetFeedbacksByUser();
 app.MapUpdateFeedback();
 app.MapDeleteFeedback();
 app.MapCampaignRoutes();
+app.MapNotificationRoutes();
 
 app.Run();

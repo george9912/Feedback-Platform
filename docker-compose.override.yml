@@ -3,6 +3,15 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=FeedbackDb;User Id=sa;Password=GeoParola2025!;TrustServerCertificate=True;Encrypt=False;
+      - RabbitMq__Enabled=true
+      - RabbitMq__Host=rabbitmq
+      - RabbitMq__Port=5672
+      - RabbitMq__Username=guest
+      - RabbitMq__Password=guest
+      - RabbitMq__VirtualHost=/
+      - RabbitMq__FeedbackCreated__Exchange=feedback.events
+      - RabbitMq__FeedbackCreated__RoutingKey=feedback.created
  
        # ConnectionStrings__DefaultConnection:"Server=sqlserver;Database=FeedbackPlatformDb;User Id=sa;Password=GeoParola2025!;TrustServerCertificate=True;"
       # - ASPNETCORE_HTTPS_PORTS=8081
@@ -29,6 +38,22 @@ services:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+
+  notificationworker:
+    environment:
+      - DOTNET_ENVIRONMENT=Development
+      - ConnectionStrings__NotificationConnection=Server=sqlserver,1433;Database=FeedbackDb;User Id=sa;Password=GeoParola2025!;TrustServerCertificate=True;Encrypt=False;
+      - RabbitMq__Host=rabbitmq
+      - RabbitMq__Port=5672
+      - RabbitMq__Username=guest
+      - RabbitMq__Password=guest
+      - RabbitMq__VirtualHost=/
+      - RabbitMq__FeedbackCreated__Exchange=feedback.events
+      - RabbitMq__FeedbackCreated__RoutingKey=feedback.created
+      - RabbitMq__FeedbackCreated__Queue=notification.feedback.created
+      - RabbitMq__FeedbackCreated__DeadLetterExchange=feedback.events.dlx
+      - RabbitMq__FeedbackCreated__DeadLetterRoutingKey=feedback.created.deadletter
+      - RabbitMq__FeedbackCreated__DeadLetterQueue=notification.feedback.created.dlq
  
   sqlserver:
     ports:

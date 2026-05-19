@@ -36,3 +36,13 @@ export async function getFeedbacksByUser(userId, page = 1, pageSize = 10, viewer
 
   return response.json();
 }
+
+export async function getFeedbackById(feedbackId) {
+  const response = await fetch(`/feedback-api/api/feedback/${feedbackId}`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch feedback details");
+  }
+
+  return response.json();
+}
