@@ -30,4 +30,8 @@
     <Folder Include="Controllers\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SharedCommon\SharedCommon.csproj" />
+  </ItemGroup>
+
 </Project>

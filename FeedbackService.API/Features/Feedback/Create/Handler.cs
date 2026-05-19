@@ -1,6 +1,8 @@
 ﻿using FeedbackService.API.Infrastructure;
 using FeedbackService.API.Common.Events;
 using FeedbackService.API.Common.Notifications;
+using FeedbackService.API.Features.Clients;
+using SharedCommon;
 using System.Diagnostics;
 using static FeedbackService.API.Features.Feedback.Create.Command;
 
@@ -10,15 +12,23 @@ namespace FeedbackService.API.Features.Feedback.Create
     {
         private readonly AppDbContext dbContext;
         private readonly IFeedbackEventPublisher eventPublisher;
+        private readonly IUserClient userClient;
 
-        public Handler(AppDbContext db, IFeedbackEventPublisher eventPublisher)
+        public Handler(AppDbContext db, IFeedbackEventPublisher eventPublisher, IUserClient userClient)
         {
             dbContext = db;
             this.eventPublisher = eventPublisher;
+            this.userClient = userClient;
         }
 
-        public async Task<CreateFeedbackResponse> Handle(CreateFeedbackRequest request, CancellationToken ct = default)
+        public async Task<Result<CreateFeedbackResponse>> Handle(CreateFeedbackRequest request, CancellationToken ct = default)
         {
+            var userExists = await userClient.UserExistsAsync(request.UserId, ct);
+            if (!userExists)
+            {
+                return Result<CreateFeedbackResponse>.Failure("Target user does not exist.");
+            }
+
             var visibility = Enum.TryParse<Features.Feedback.FeedbackVisibility>(request.Visibility, true, out var parsed)
                 ? parsed
                 : Features.Feedback.FeedbackVisibility.Public;
@@ -46,7 +56,7 @@ namespace FeedbackService.API.Features.Feedback.Create
 
             await eventPublisher.PublishFeedbackCreatedAsync(evt, ct);
 
-            return new CreateFeedbackResponse(entity.Id);
+            return Result<CreateFeedbackResponse>.Success(new CreateFeedbackResponse(entity.Id));
         }
     }
 }

@@ -101,34 +101,6 @@ using (var scope = app.Services.CreateScope())
             Thread.Sleep(5000);
         }
     }
-
-    const string createUserNotificationsTableSql = """
-    IF OBJECT_ID('dbo.UserNotifications', 'U') IS NULL
-    BEGIN
-        CREATE TABLE [dbo].[UserNotifications] (
-            [Id] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-            [EventId] UNIQUEIDENTIFIER NOT NULL,
-            [RecipientUserId] UNIQUEIDENTIFIER NOT NULL,
-            [ActorUserId] UNIQUEIDENTIFIER NOT NULL,
-            [FeedbackId] UNIQUEIDENTIFIER NOT NULL,
-            [Message] NVARCHAR(500) NOT NULL,
-            [IsRead] BIT NOT NULL,
-            [CreatedAtUtc] DATETIME2 NOT NULL,
-            [ReadAtUtc] DATETIME2 NULL
-        );
-
-        CREATE UNIQUE INDEX [IX_UserNotifications_EventId]
-            ON [dbo].[UserNotifications]([EventId]);
-
-        CREATE INDEX [IX_UserNotifications_RecipientUserId_CreatedAtUtc]
-            ON [dbo].[UserNotifications]([RecipientUserId], [CreatedAtUtc]);
-
-        CREATE INDEX [IX_UserNotifications_RecipientUserId_IsRead]
-            ON [dbo].[UserNotifications]([RecipientUserId], [IsRead]);
-    END
-    """;
-
-    dbContext.Database.ExecuteSqlRaw(createUserNotificationsTableSql);
 }
 
 app.UseSwagger();

@@ -29,9 +29,19 @@ namespace FeedbackService.API.Features.Feedback.Create
         {
             var result = await _handler.Handle(req, ct);
 
+            if (result.IsFailure || result.Value is null)
+            {
+                HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+                await HttpContext.Response.WriteAsJsonAsync(
+                    new { message = result.Error ?? "Failed to create feedback." },
+                    cancellationToken: ct);
+
+                return;
+            }
+
             await this.SendCreatedAtManual(
-                $"/api/feedback/{result.Id}",
-                result,
+                $"/api/feedback/{result.Value.Id}",
+                result.Value,
                 ct);
         }
 
